@@ -47,6 +47,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/prediksi', [\App\Http\Controllers\PredictionController::class, 'index'])->name('prediksi');
     Route::post('/prediksi/snapshot', [\App\Http\Controllers\PredictionController::class, 'snapshot'])->name('prediksi.snapshot');
     Route::get('/prediksi/export-pdf', [\App\Http\Controllers\PredictionController::class, 'exportPDF'])->name('prediksi.export-pdf');
+    Route::get('/prediksi/export-csv/{id}', [\App\Http\Controllers\PredictionController::class, 'exportData'])->name('prediksi.export-data');
 
     Route::middleware(['super_admin'])->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');

@@ -81,6 +81,7 @@
                             <th class="px-6 py-4">Nama Admin</th>
                             <th class="px-6 py-4">Hasil Prediksi</th>
                             <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -94,17 +95,28 @@
                                 @else
                                     <span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Infertil ({{ $history->confidence_score }}%)</span>
                                 @endif
+                                @if($history->snapshot_path)
+                                <a href="{{ asset('storage/' . $history->snapshot_path) }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:text-blue-600 text-xs font-bold underline">
+                                    <span class="material-symbols-outlined text-[14px]">image</span> Lihat Gambar
+                                </a>
+                                @else
                                 <a href="{{ asset('ml_egg_prediction.png') }}" target="_blank" class="inline-flex items-center gap-1 text-primary hover:text-blue-600 text-xs font-bold underline">
                                     <span class="material-symbols-outlined text-[14px]">image</span> Lihat Gambar
                                 </a>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <span class="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full">{{ $history->status }}</span>
                             </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{{ route('prediksi.export-data', $history->id) }}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-lg hover:bg-green-100 transition-colors border border-green-200 shadow-sm" title="Ekspor Data Excel/CSV">
+                                    <span class="material-symbols-outlined text-[16px]">text_snippet</span> Ekspor Data
+                                </a>
+                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="text-center py-8 text-slate-500 font-medium">
+                            <td colspan="5" class="text-center py-8 text-slate-500 font-medium">
                                 @if(request('start_date') || request('end_date') || request('quick_filter'))
                                     Tidak ada data pada tanggal tersebut
                                 @else

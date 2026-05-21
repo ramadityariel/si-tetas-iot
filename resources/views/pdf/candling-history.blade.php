@@ -33,7 +33,11 @@
                 <td>{{ $history->admin_name }}</td>
                 <td>
                     {{ $history->prediction_result }} ({{ $history->confidence_score }}%)<br>
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('ml_egg_prediction.png'))) }}" alt="Hasil Prediksi" style="width: 100px; height: auto; margin-top: 5px; border-radius: 4px;">
+                    @if($history->snapshot_path && file_exists(storage_path('app/public/' . $history->snapshot_path)))
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(storage_path('app/public/' . $history->snapshot_path))) }}" alt="Hasil Prediksi" style="width: 100px; height: auto; margin-top: 5px; border-radius: 4px;">
+                    @else
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('ml_egg_prediction.png'))) }}" alt="Hasil Prediksi" style="width: 100px; height: auto; margin-top: 5px; border-radius: 4px;">
+                    @endif
                 </td>
                 <td>{{ $history->status }}</td>
             </tr>

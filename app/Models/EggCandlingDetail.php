@@ -5,20 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CandlingHistory extends Model
+class EggCandlingDetail extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'snapshot_path',
+        'candling_id',
+        'egg_id',
         'prediction_result',
         'confidence_score',
-        'admin_name',
-        'status',
+        'notes',
     ];
 
-    public function eggCandlingDetails()
+    public function candlingHistory()
     {
-        return $this->hasMany(EggCandlingDetail::class, 'candling_id');
+        return $this->belongsTo(CandlingHistory::class, 'candling_id');
     }
 }
