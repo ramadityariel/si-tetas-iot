@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\EggCandlingDetail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 class PredictionController extends Controller
 {
@@ -49,64 +50,150 @@ class PredictionController extends Controller
     public function snapshot(Request $request)
     {
         $imageData = $request->input('image');
+        $trayType = $request->input('tray_type', '42_butir'); // Ambil pilihan dari blade
         
-        // Simpan gambar snapshot ke storage
-        $imageName = 'ml_egg_prediction.png'; // default fallback
+        $imageName = 'ml_egg_prediction.png'; 
         $snapshotPath = null;
+        $binaryData = null;
+
         if ($imageData && preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
             $data = substr($imageData, strpos($imageData, ',') + 1);
             $type = strtolower($type[1]);
-            $data = base64_decode($data);
-            if ($data !== false) {
+            $binaryData = base64_decode($data);
+            if ($binaryData !== false) {
                 $imageName = 'snapshot_' . time() . '_' . Str::random(5) . '.' . $type;
-                Storage::disk('public')->put('snapshots/' . $imageName, $data);
+                Storage::disk('public')->put('snapshots/' . $imageName, $binaryData);
                 $snapshotPath = 'snapshots/' . $imageName;
             }
         }
 
-        // Simulasi hasil prediksi agregat
-        $isFertilAgg = rand(0, 1) === 1;
-        $resultText = $isFertilAgg ? 'Fertil' : 'Infertil';
-        $scoreAgg = rand(80, 99);
-
-        // Buat record baru di candling_histories
-        $history = CandlingHistory::create([
-            'snapshot_path' => $snapshotPath,
-            'prediction_result' => $resultText,
-            'confidence_score' => $scoreAgg,
-            'admin_name' => auth()->user() ? auth()->user()->name : 'Admin Si-Tetas',
-            'status' => 'Selesai',
-        ]);
-
-        // Looping otomatis untuk 88 butir telur
-        for ($i = 1; $i <= 88; $i++) {
-            $eggId = str_pad($i, 2, '0', STR_PAD_LEFT);
-            
-            // Simulasi hasil per telur (contoh: 5% kosong, sisanya random fertil/infertil)
-            $rand = rand(1, 100);
-            if ($rand <= 5) {
-                $status = 'kosong';
-                $eggScore = null;
-            } else {
-                $status = rand(0, 1) === 1 ? 'fertil' : 'infertil';
-                $eggScore = rand(7000, 9999) / 100; // 70.00 to 99.99
-            }
-
-            EggCandlingDetail::create([
-                'candling_id' => $history->id,
-                'egg_id' => $eggId,
-                'prediction_result' => $status,
-                'confidence_score' => $eggScore,
-                'notes' => $status == 'kosong' ? 'Tidak ada objek terdeteksi' : null,
-            ]);
+        if (!$binaryData) {
+            return response()->json(['success' => false, 'message' => 'Format gambar kamera tidak valid.'], 400);
         }
 
-        return response()->json([
-            'success' => true,
-            'prediction' => $resultText,
-            'score' => $scoreAgg,
-            'history' => $history
-        ]);
+        try {
+            // LOGIKA PILIHAN ENDPOINT TANPA UTAC-ATIK PYTHON
+            if ($trayType === '1_butir') {
+                // Tembak endpoint satuan bawaan Python
+                $response = Http::attach('file', $binaryData, $imageName)
+                                ->post('http://127.0.0.1:8000/predict/single');
+            } else {
+                // Tembak endpoint rak bawaan Python
+                $response = Http::attach('file', $binaryData, $imageName)
+                                ->post('http://127.0.0.1:8000/predict/tray');
+            }
+
+            if ($response->failed()) {
+                return response()->json(['success' => false, 'message' => 'Gagal terhubung ke service ML.'], 500);
+            }
+
+            $mlResult = $response->json();
+
+            // SINKRONISASI DATA HASIL NYATA
+            $eggsData = [];
+            $scoreAgg = 0;
+            $resultText = 'Infertil';
+
+            if ($trayType === '1_butir') {
+                // Jika 1 butir, format JSON Python berupa predicted_class & confidence
+                $confidence = $mlResult['confidence'] ?? 0;
+                $scoreAgg = round($confidence * 100, 2);
+                
+                $rawClass = strtolower($mlResult['predicted_class'] ?? 'infertil');
+                $resultText = ($rawClass == 'fertil_hidup' || $rawClass == 'fertil_mati') ? 'Fertil' : 'Infertil';
+                
+                $eggsData[] = [
+                    'class' => $rawClass,
+                    'confidence' => $confidence,
+                    'position' => 'Satuan'
+                ];
+            } else {
+                // Jika rak (massal)
+                $eggsData = $mlResult['results'] ?? [];
+                $totalConfidence = 0;
+                $eggCount = count($eggsData);
+                
+                if ($eggCount > 0) {
+                    foreach ($eggsData as $egg) {
+                        $totalConfidence += ($egg['confidence'] ?? 0);
+                    }
+                    $scoreAgg = round(($totalConfidence / $eggCount) * 100, 2);
+                }
+
+                $summary = $mlResult['summary'] ?? [];
+                $fertilCount = ($summary['fertil_hidup'] ?? 0) + ($summary['fertil_mati'] ?? 0);
+                $infertilCount = $summary['infertil'] ?? 0;
+                $resultText = ($fertilCount >= $infertilCount) ? 'Fertil' : 'Infertil';
+            }
+
+            // Simpan Ringkasan ke Database
+            $history = CandlingHistory::create([
+                'snapshot_path' => $snapshotPath,
+                'prediction_result' => $resultText,
+                'confidence_score' => $scoreAgg,
+                'admin_name' => auth()->user() ? auth()->user()->name : 'Admin Si-Tetas',
+                'status' => 'Selesai',
+            ]);
+
+            // Simpan Detail Butir ke Database dengan proteksi ENUM kamu
+            foreach ($eggsData as $index => $egg) {
+                $rawStatus = strtolower($egg['class'] ?? 'kosong');
+                if ($rawStatus == 'fertil_hidup' || $rawStatus == 'fertil_mati' || $rawStatus == 'fertil') {
+                    $dbStatus = 'fertil';
+                } elseif ($rawStatus == 'infertil') {
+                    $dbStatus = 'infertil';
+                } else {
+                    $dbStatus = 'kosong'; // Pengaman status uncertain
+                }
+
+                EggCandlingDetail::create([
+                    'candling_id' => $history->id,
+                    'egg_id' => str_pad($index + 1, 2, '0', STR_PAD_LEFT),
+                    'prediction_result' => $dbStatus, 
+                    'confidence_score' => isset($egg['confidence']) ? round($egg['confidence'] * 100, 2) : null,
+                    'notes' => 'Mode: ' . ($egg['position'] ?? 'N/A'),
+                ]);
+            }
+
+            $annotatedBase64 = null;
+            if (isset($mlResult['annotated_image_base64'])) {
+                $annotatedBase64 = 'data:image/png;base64,' . $mlResult['annotated_image_base64'];
+            }
+
+            return response()->json([
+                'success' => true,
+                'prediction' => $resultText,
+                'score' => $scoreAgg . '%',
+                'history' => $history,
+                'annotated_image' => $annotatedBase64 
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        // Pastikan hanya super_admin yang bisa mengeksekusi ini di backend
+        if (auth()->user()->role !== 'super_admin') {
+            abort(403, 'Anda tidak memiliki hak akses untuk menghapus data ini.');
+        }
+
+        $history = CandlingHistory::findOrFail($id); // Sesuaikan nama Model riwayatmu
+
+        // Hapus file fisik gambar di folder storage agar tidak memenuhkan disk penyimpanan
+        if ($history->snapshot_path && Storage::disk('public')->exists($history->snapshot_path)) {
+            Storage::disk('public')->delete($history->snapshot_path);
+        }
+
+        // Hapus data dari database
+        $history->delete();
+
+        return redirect()->back()->with('success', 'Riwayat candling dan foto berhasil dihapus permanen.');
     }
 
     public function exportPDF(Request $request)
@@ -141,7 +228,7 @@ class PredictionController extends Controller
 
         $pdf = Pdf::loadView('pdf.candling-history', compact('histories'));
         
-        return $pdf->stream('laporan-riwayat-candling.pdf');
+        return $pdf->download('laporan-riwayat-candling.pdf');
     }
 
     public function exportData($id)
@@ -163,10 +250,8 @@ class PredictionController extends Controller
         $callback = function() use($history, $columns) {
             $file = fopen('php://output', 'w');
             
-            // Tambahkan BOM UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
             
-            // Tulis header dengan delimiter titik koma
             fputcsv($file, $columns, ';');
             
             foreach ($history->eggCandlingDetails as $detail) {
