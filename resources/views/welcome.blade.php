@@ -1,347 +1,559 @@
 @extends('layouts.app')
 
 @php
-    // <!-- UBAH LINK YOUTUBE DI VARIABEL $video_url DI BAWAH -->
+    // <!-- UBAH LINK YOUTUBE DI VARIABEL DI BAWAH JIKA ADA VIDEO BARU -->
     $video_url = 'https://www.youtube.com/embed/qdGOl990uLQ';
     
-    // <!-- UBAH NAMA DAN FOTO TIM DI ARRAY INI -->
+    // <!-- ARRAY DATA TIM FINAL & STERIL DARI ERROR PARSE PHP -->
     $team = [
-        ['name' => 'Ariel Pasha Ramaditya', 'role' => 'Project Manager & IoT Engineer', 'image' => 'ariel.jpg'],
-        ['name' => 'Della', 'role' => 'Hardware & Research', 'image' => 'anggota1.jpg'],
-        ['name' => 'Chris', 'role' => 'UI/UX & Frontend', 'image' => 'anggota2.jpg'],
-        ['name' => 'Cipung', 'role' => 'Main ML', 'image' => 'anggota3.jpg'],
-        ['name' => 'Kenang', 'role' => 'Role 5', 'image' => 'anggota4.jpg'],
-        ['name' => 'Fathir', 'role' => 'Role 6', 'image' => 'anggota5.jpg'],
-        ['name' => 'Fadilla', 'role' => 'Role 7', 'image' => 'anggota6.jpg'],
-        ['name' => 'Dinda', 'role' => 'Role 8', 'image' => 'anggota7.jpg']
-    ];
+        ['name' => 'Ariel Pasha Ramaditya', 'role' => 'Software Engineer', 'image' => 'ariel.jpg', 'quote' => 'Membangun arsitektur web robust dan integrasi API IoT yang real-time.'],
+        ['name' => 'Della', 'role' => 'Project Manager', 'image' => 'anggota1.jpg', 'quote' => 'Mengorkestrasi timeline pengembangan sistem agar rilis tepat waktu dan presisi.'],
+        ['name' => 'Chris', 'role' => '3D Desain', 'image' => 'anggota2.jpg', 'quote' => 'Merancang pemodelan 3D mekanik inkubator dengan presisi tinggi.'],
+        ['name' => 'Irdan Rifqy', 'role' => 'Hardware', 'image' => 'anggota3.jpg', 'quote' => 'Merakit skema sirkuit mikrokontroler dan kalibrasi akurasi sensor.'],
+        ['name' => 'Setia Mega', 'role' => 'Hardware', 'image' => 'anggota4.jpg', 'quote' => 'Optimalisasi manajemen daya hardware dan kestabilan aktuator pemanas.'],
+        ['name' => 'Fathir', 'role' => 'Machine Learning Engineer', 'image' => 'anggota5.jpg', 'quote' => 'Mengembangkan algoritma visi komputer untuk deteksi otomatis embrio telur.'],
+        ['name' => 'Fadilla', 'role' => 'Hardware & Publication', 'image' => 'anggota6.jpg', 'quote' => 'Menjembatani validasi teknis perangkat dengan publikasi ilmiah yang kredibel.'],
+        ['name' => 'Dinda', 'role' => 'Software Engineer & Video Editor', 'image' => 'anggota7.jpg', 'quote' => 'Mengembangkan logika front-end sekaligus mengemas visualisasi video dokumentasi proyek.']
+    ]; 
 @endphp
 
 @section('content')
-<!-- Hero Section -->
+<!-- Tambahkan Assets CDN Swiper.js di Atas Style -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- Style Utility Minimalis Khusus Landing Page -->
 <style>
-    /* Sembunyikan navigasi bawaan dari layout.app khusus di halaman ini */
+    /* Sembunyikan navigasi bawaan dari layout.app khusus di halaman utama ini */
     body > nav.fixed { display: none !important; }
     body > main { padding-top: 0 !important; }
+    
+    /* Atur kontainer Swiper agar efek hover scale tidak terpotong oleh overflow */
+    .swiper {
+        width: 100%;
+        padding-top: 20px !important;
+        padding-bottom: 50px !important;
+        overflow: visible !important;
+    }
+    .swiper-wrapper {
+        z-index: 10 !important;
+    }
 </style>
 
-<!-- Navigation Minimalis Khusus Landing Page -->
+<!-- =========================================================================
+     NAVIGATION BAR (TRANSPARENT TO SOLID BLUE ON SCROLL)
+     ========================================================================= -->
 <nav id="landing-navbar" class="fixed top-0 left-0 w-full z-50 bg-transparent transition-all duration-300">
     <div class="px-6 py-4 lg:px-16 flex justify-between items-center max-w-[1440px] mx-auto w-full">
-        <!-- Logo -->
-        <div class="text-3xl font-black text-white" style="font-family: 'Brush Script MT', 'Dancing Script', cursive;">
+        <!-- Brand Identity -->
+        <div class="text-3xl font-black text-slate-900 dark:text-white transition-transform duration-300 hover:scale-105" style="font-family: 'Brush Script MT', 'Dancing Script', cursive;">
             Si-Tetas
         </div>
         
-        <!-- Center Links -->
-        <div class="hidden md:flex items-center gap-10 text-white/90 text-sm font-semibold tracking-wide">
-            <a href="{{ url('/#beranda') }}" class="hover:text-white transition-colors">Home</a>
-            <a href="{{ url('/#artikel-terbaru') }}" class="hover:text-white transition-colors">Blog</a>
-            <a href="{{ url('/#tentang-kami') }}" class="hover:text-white transition-colors">Tentang Kami</a>
-            <a href="{{ url('/#demo-operasional') }}" class="hover:text-white transition-colors">Demo</a>
+        <!-- Center Nav Links -->
+        <div class="hidden md:flex items-center gap-10 text-slate-800 dark:text-white/90 text-sm font-semibold tracking-wide">
+            <a href="{{ url('/#beranda') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.home') !!}</a>
+            <a href="{{ url('/#artikel-terbaru') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.blog') !!}</a>
+            <a href="{{ url('/#demo-operasional') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.demo') !!}</a>
+            <a href="{{ url('/#tentang-kami') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.about') !!}</a>
         </div>
         
-        <!-- Right Button -->
-        <div>
-            <a href="{{ route('login') }}" class="border border-white/40 text-white px-6 py-2 rounded-sm text-sm font-bold tracking-wider hover:bg-white hover:text-black transition-all">
-                LOGIN
+        <!-- Call to Action Login Button & Toggles -->
+        <div class="flex items-center gap-4">
+            <!-- Theme Toggle Icon -->
+            <button id="theme-toggle" class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-sky-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" title="Toggle Theme">
+                <span id="theme-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+            </button>
+            
+            <!-- Language Toggle Capsule -->
+            <a href="{{ route('lang.switch', app()->getLocale() == 'id' ? 'en' : 'id') }}" class="relative flex items-center w-16 h-8 rounded-full bg-slate-200 dark:bg-slate-700 shadow-inner border border-slate-300 dark:border-slate-600 transition-colors overflow-hidden font-bold text-[10px]" title="Toggle Language">
+                <div class="absolute w-1/2 h-full bg-white dark:bg-slate-600 rounded-full shadow transition-transform duration-300 {{ app()->getLocale() == 'id' ? 'translate-x-full' : 'translate-x-0' }}"></div>
+                <span class="w-1/2 text-center z-10 {{ app()->getLocale() == 'en' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400' }}">EN</span>
+                <span class="w-1/2 text-center z-10 {{ app()->getLocale() == 'id' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400' }}">ID</span>
+            </a>
+
+            <a href="{{ route('login') }}" onclick="confirmLogin(event, this.href)" class="border border-slate-600 dark:border-white/40 text-slate-800 dark:text-white px-6 py-2 rounded-sm text-sm font-bold tracking-wider hover:bg-slate-800 hover:text-white dark:hover:bg-white dark:hover:text-black dark:hover:border-white transition-all">
+                {!! __('welcome.nav.login') !!}
             </a>
         </div>
     </div>
 </nav>
 
-<section id="beranda" class="relative min-h-[100vh] flex flex-col overflow-hidden bg-slate-900">
-    <!-- Background Image -->
+<!-- =========================================================================
+     SECTION 1: HERO SECTION
+     ========================================================================= -->
+<section id="beranda" class="relative min-h-[100vh] flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
+    <!-- Ambient Background Image -->
     <div class="absolute inset-0 z-0">
-        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="Smart Incubator Background" class="w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-black/70"></div>
+        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="Smart Incubator Background" class="w-full h-full object-cover opacity-30 dark:opacity-100 transition-opacity duration-500" />
+        <div class="absolute inset-0 bg-white/80 dark:bg-black/70 transition-colors duration-500"></div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Hero Core Content -->
     <div class="relative z-10 flex-1 flex flex-col justify-center px-6 lg:px-16 max-w-[1440px] mx-auto w-full pb-32 pt-32">
         <div class="max-w-3xl text-left">
-            <p class="text-sky-400 font-bold tracking-widest uppercase mb-6 text-sm">
-                Sistem Inkubator Cerdas, AI & IoT
+            <p class="text-sky-600 dark:text-sky-400 font-bold tracking-widest uppercase mb-6 text-sm flex items-center gap-2">
+                <span class="inline-block w-2 h-2 bg-sky-500 dark:bg-sky-400 rounded-full animate-pulse"></span>
+                {!! __('welcome.hero.badge') !!}
             </p>
-            <h1 class="text-5xl md:text-6xl lg:text-[5rem] font-serif text-white mb-8 leading-[1.1] font-light tracking-wide">
-                Si-Tetas Smart<br>Incubator System.
+            <h1 class="text-5xl md:text-6xl lg:text-[5rem] font-serif text-slate-900 dark:text-white mb-8 leading-[1.1] font-light tracking-wide">
+                {!! __('welcome.hero.title') !!}
             </h1>
-            <p class="text-white/70 text-base md:text-lg mb-12 max-w-xl leading-relaxed font-light">
-                Tingkatkan efisiensi penetasan dengan pemantauan suhu, kelembaban, dan rotasi telur otomatis secara real-time dari genggaman tangan Anda.
+            <p class="text-slate-700 dark:text-white/70 text-base md:text-lg mb-12 max-w-xl leading-relaxed font-light">
+                {!! __('welcome.hero.desc') !!}
             </p>
             
             <div class="flex flex-wrap gap-5">
-                <a href="{{ route('login') }}" class="bg-[#35627C] hover:bg-[#194A63] text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-colors shadow-lg uppercase">
-                    Mulai Sekarang
+                <a href="{{ route('login') }}" onclick="confirmLogin(event, this.href)" class="bg-[#35627C] hover:bg-[#194A63] text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-all shadow-lg hover:shadow-[#35627C]/20 hover:-translate-y-0.5 uppercase">
+                    {!! __('welcome.hero.btn_start') !!}
                 </a>
-                <a href="#demo-operasional" class="border border-white/80 hover:bg-white hover:text-black text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-colors uppercase">
-                    Lihat Demo
+                <a href="#demo-operasional" class="border border-slate-600 dark:border-white/80 hover:bg-slate-800 hover:text-white dark:hover:bg-white dark:hover:text-black text-slate-800 dark:text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-colors uppercase">
+                    {!! __('welcome.hero.btn_demo') !!}
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Concave Wave / Curve -->
+    <!-- Elemen Kurva Concave Transisi -->
     <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-10 translate-y-[2px]">
-        <svg viewBox="0 0 1440 100" class="w-full h-[60px] md:h-[120px] fill-surface-container-low" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 1440 100" class="w-full h-[60px] md:h-[120px] fill-white dark:fill-slate-900 transition-colors duration-500" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,100 L0,0 C360,90 1080,90 1440,0 L1440,100 Z"></path>
         </svg>
     </div>
 </section>
 
-<!-- Blog Section (Bento Grid Style) -->
-<section id="artikel-terbaru" class="bg-surface-container-low py-24">
-    <div class="max-w-7xl mx-auto px-8">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div>
-                <h2 class="text-3xl font-extrabold font-headline text-primary mb-2">Artikel Terbaru</h2>
-                <p class="text-on-surface-variant">Panduan dan tips terbaik untuk manajemen inkubasi modern.</p>
-            </div>
-            <a class="text-primary font-bold flex items-center gap-1 hover:gap-3 transition-all" href="{{ route('blog.index') }}">
-                Lihat Semua Artikel
-                <span class="material-symbols-outlined">chevron_right</span>
-            </a>
+<!-- =========================================================================
+     SECTION 2: ARTIKEL TERBARU
+     ========================================================================= -->
+<section id="artikel-terbaru" class="bg-white dark:bg-slate-900 py-24 relative overflow-hidden transition-colors duration-500">
+    <!-- Ambient Light Effect -->
+    <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-sky-200/40 dark:bg-sky-500/5 rounded-full blur-[100px] pointer-events-none transition-colors duration-500"></div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-wide uppercase">
+                {!! __('welcome.blog.title') !!}
+            </h2>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+                {!! __('welcome.blog.desc') !!}
+            </p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Grid System -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-stretch">
+            
             @if(isset($articles) && $articles->isNotEmpty())
-                @foreach($articles as $article)
-                <div class="bg-surface-container-lowest rounded-lg p-4 shadow-sm hover:shadow-xl transition-all group">
-                    <div class="aspect-video mb-6 overflow-hidden rounded-lg">
-                        @if($article->thumbnail)
-                            <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" src="{{ asset('storage/'.$article->thumbnail) }}" alt="{{ $article->title }}"/>
-                        @else
-                            <div class="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-4xl text-slate-400">image</span>
-                            </div>
-                        @endif
+                @foreach($articles->take(7) as $article)
+                <div class="bg-slate-50 dark:bg-white/5 backdrop-blur-md rounded-none border border-slate-200 dark:border-white/10 shadow-md dark:shadow-lg flex flex-col justify-between group hover:shadow-sky-500/10 dark:hover:shadow-sky-500/5 hover:bg-slate-100 dark:hover:bg-white/10 hover:-translate-y-1 transition-all duration-300">
+                    
+                    <div>
+                        <div class="aspect-[4/3] w-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+                            @if($article->thumbnail)
+                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ asset('storage/'.$article->thumbnail) }}" alt="{{ $article->title }}"/>
+                            @else
+                                <div class="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-4xl text-slate-400 dark:text-slate-600">image</span>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <div class="p-5 pb-4">
+                            <h3 class="text-sm font-bold text-slate-800 dark:text-white tracking-wide uppercase group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors duration-200 line-clamp-2">
+                                <a href="{{ route('blog.read', $article->slug) }}">
+                                    {{ $article->title }}
+                                </a>
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed font-light">
+                                {{ \Illuminate\Support\Str::limit($article->subtitle ?? $article->content, 80) }}
+                            </p>
+                        </div>
                     </div>
-                    <div class="px-2">
-                        <span class="text-xs font-bold text-secondary uppercase tracking-widest">{{ $article->category ?? 'Artikel' }}</span>
-                        <h3 class="text-xl font-bold font-headline mt-2 mb-4 text-primary leading-snug">{{ $article->title }}</h3>
-                        <p class="text-sm text-on-surface-variant mb-4">{{ \Illuminate\Support\Str::limit($article->subtitle ?? $article->content, 100) }}</p>
-                        <a href="{{ route('blog.read', $article->slug) }}" class="text-[#715B36] font-bold text-sm flex items-center gap-2 hover:underline decoration-[#715B36]">
-                            Baca Selengkapnya
-                            <span class="material-symbols-outlined text-base">open_in_new</span>
-                        </a>
+                    
+                    <div class="px-5 pb-4">
+                        <div class="border-t border-dashed border-slate-300 dark:border-white/10 pt-3 flex justify-between items-center text-[11px] font-medium tracking-wider uppercase">
+                            <span class="text-sky-600 dark:text-sky-400 font-bold">
+                                {{ $article->category ?? 'Inkubasi' }}
+                            </span>
+                            <a href="{{ route('blog.read', $article->slug) }}" class="text-slate-500 dark:text-slate-300 font-extrabold hover:text-slate-800 dark:hover:text-white flex items-center gap-0.5">
+                                {!! __('welcome.blog.read') !!} 
+                                <span class="material-symbols-outlined text-xs">chevron_right</span>
+                            </a>
+                        </div>
                     </div>
+
                 </div>
                 @endforeach
             @else
-                <div class="col-span-full text-center py-8">
-                    <p class="text-on-surface-variant">Belum ada artikel terbaru.</p>
+                <div class="col-span-full md:col-span-3 bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 p-12 text-center flex flex-col justify-center items-center">
+                    <span class="material-symbols-outlined text-4xl text-slate-400 dark:text-slate-500 mb-2">draft</span>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">{!! __('welcome.blog.empty') !!}</p>
                 </div>
             @endif
+
+            <!-- KARTU AKSI -->
+            <div class="bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-md dark:shadow-lg flex flex-col items-center justify-center p-8 text-center min-h-[320px]">
+                <div class="text-slate-400 mb-4">
+                    <svg class="w-10 h-10 text-sky-500 dark:text-sky-400/80" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                    </svg>
+                </div>
+                <h4 class="text-base font-black text-slate-800 dark:text-white uppercase tracking-widest mb-1">
+                    {!! __('welcome.blog.search_title') !!}
+                </h4>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-6 max-w-[160px] mx-auto leading-relaxed font-light">
+                    {!! __('welcome.blog.search_desc') !!}
+                </p>
+                <a href="{{ route('blog.index') }}" class="border border-slate-300 dark:border-white/20 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-none text-xs font-bold tracking-wider hover:bg-slate-800 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all duration-300 uppercase">
+                    {!! __('welcome.blog.btn_all') !!}
+                </a>
+            </div>
+
         </div>
     </div>
 </section>
 
-<!-- Video Demo Section -->
-<section id="demo-operasional" class="py-24 relative overflow-hidden">
-    <!-- Background Image -->
+<!-- =========================================================================
+     SECTION 3: DEMO TIM
+     ========================================================================= -->
+<section id="demo-operasional" class="py-24 relative overflow-hidden bg-slate-100 dark:bg-slate-900 transition-colors duration-500">
     <div class="absolute inset-0 z-0">
-        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="Technology Background" class="w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-[#0f2a3f]/85"></div>
+        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="Technology Background" class="w-full h-full object-cover opacity-20 dark:opacity-100" />
+        <div class="absolute inset-0 bg-white/90 dark:bg-[#0f2a3f]/90 transition-colors duration-500"></div>
     </div>
 
-    <div class="relative z-10 max-w-7xl mx-auto px-8 mb-12 text-center">
-        <h2 class="text-4xl font-extrabold font-headline text-white drop-shadow-lg mb-4">Demo Operasional</h2>
-        <p class="text-white/80 max-w-2xl mx-auto drop-shadow-md">Geser kartu di bawah ini untuk menjelajahi simulasi dan arsitektur sistem cerdas Si-Tetas.</p>
+    <div class="relative z-10 max-w-7xl mx-auto px-8 mb-4 text-center">
+        <h2 class="text-4xl font-extrabold text-slate-900 dark:text-white drop-shadow-lg mb-4">{!! __('welcome.demo.title') !!}</h2>
+        <p class="text-slate-700 dark:text-white/80 max-w-2xl mx-auto text-sm font-light">{!! __('welcome.demo.desc') !!}</p>
     </div>
 
-    <style>
-        /* Sembunyikan scrollbar bawaan browser */
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
-
-    <!-- Container Utama (Scrollable) -->
-    <div class="relative z-10 flex gap-6 overflow-x-auto snap-x snap-mandatory pb-10 pt-4 px-4 lg:px-[calc((100vw-80rem)/2)] hide-scroll">
-        
-        <!-- Spacer Kiri -->
-        <div class="shrink-0 w-2 md:w-8"></div>
-
-        <!-- Slide 1: Simulasi Operasional (Video) -->
-        <div class="snap-center shrink-0 w-[85%] md:w-[60%] rounded-3xl shadow-2xl border border-white/10 overflow-hidden backdrop-blur-md bg-white/5 aspect-video relative group">
-            <div class="absolute top-4 left-4 z-10 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md pointer-events-none drop-shadow-md border border-white/20">
-                🎬 Video Demo
-            </div>
-            <iframe class="absolute top-0 left-0 w-full h-full z-0" src="{{ $video_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-
-        <!-- Slide 2: Perangkat Keras IoT -->
-        <div class="snap-center shrink-0 w-[85%] md:w-[60%] rounded-3xl shadow-2xl border border-white/10 overflow-hidden backdrop-blur-md bg-white/5 aspect-video relative flex flex-col justify-end group">
-             <!-- Label Kiri Atas -->
-             <div class="absolute top-4 left-4 z-20 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md pointer-events-none drop-shadow-md border border-white/20">
-                 ⚙️ Perangkat Keras IoT
-             </div>
-             
-             <!-- Gambar Ilustrasi Hardware -->
-             <img src="https://images.unsplash.com/photo-1555664424-778a1e5e1b48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Hardware Setup" class="absolute inset-0 w-full h-full object-cover z-0 group-hover:scale-105 transition-transform duration-700" />
-             
-             <!-- Dark Overlay Tipis -->
-             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 z-10"></div>
-             
-             <div class="relative z-20 p-6 md:p-10">
-                 <h3 class="text-2xl md:text-3xl font-bold font-headline text-white mb-3 drop-shadow-md">Arsitektur Hardware</h3>
-                 <p class="text-white/90 leading-relaxed text-sm md:text-base drop-shadow-sm max-w-2xl">
-                     Sistem ditenagai oleh Sensor DHT22 untuk presisi suhu & kelembaban, modul kamera ESP32-CAM untuk visual internal, serta NodeMCU ESP8266 sebagai mikrokontroler pengatur rotasi rak telur dan transmisi IoT.
-                 </p>
-             </div>
-        </div>
-
-        <!-- Slide 3: Dashboard & Prediksi AI -->
-        <div class="snap-center shrink-0 w-[85%] md:w-[60%] rounded-3xl shadow-2xl border border-white/10 overflow-hidden backdrop-blur-md bg-white/5 aspect-video relative flex flex-col justify-end group">
-             <!-- Gambar Screenshot Dashboard -->
-             <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" alt="Dashboard Interface" class="absolute inset-0 w-full h-full object-cover z-0 group-hover:scale-105 transition-transform duration-700" />
-             
-             <!-- Dark Overlay Tipis -->
-             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 z-10"></div>
-             
-             <div class="relative z-20 p-6 md:p-10">
-                 <h3 class="text-2xl md:text-3xl font-bold font-headline text-white mb-3 drop-shadow-md">📊 Antarmuka & Analisis Cerdas</h3>
-                 <p class="text-white/90 leading-relaxed text-sm md:text-base drop-shadow-sm max-w-2xl">
-                     Pantau grafik suhu, kelembaban, dan status rotasi secara real-time melalui web. Terintegrasi dengan tangkapan visual deteksi AI yang memonitor perkembangan embrio di dalam telur secara otomatis.
-                 </p>
-             </div>
-        </div>
-
-        <!-- Spacer Kanan -->
-        <div class="shrink-0 w-4 md:w-12"></div>
-    </div>
-</section>
-
-<!-- About Us Section -->
-<section id="tentang-kami" class="max-w-7xl mx-auto px-8 py-24">
-    <div class="text-center mb-16">
-        <h2 class="text-4xl font-extrabold font-headline text-primary mb-4">Tim Kami</h2>
-        <p class="text-on-surface-variant max-w-2xl mx-auto">Para ahli di balik pengembangan Si-Tetas yang berdedikasi untuk memajukan peternakan digital.</p>
-    </div>
-    
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-y-16 gap-x-8 max-w-6xl mx-auto">
-        @foreach($team as $member)
-        <div class="flex flex-col items-center text-center space-y-4">
-            <div class="w-32 h-32 rounded-full overflow-hidden p-1 bg-gradient-to-tr from-primary to-secondary">
-                <img class="w-full h-full object-cover rounded-full border-4 border-white" src="{{ asset('images/' . $member['image']) }}" alt="{{ $member['name'] }}"/>
-            </div>
-            <div>
-                <h4 class="font-bold text-lg font-headline text-primary">{{ $member['name'] }}</h4>
-                <p class="text-sm text-secondary font-medium">{{ $member['role'] }}</p>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</section>
-
-<!-- CTA Section -->
-<section class="max-w-7xl mx-auto px-8 py-20">
-    <div class="bg-gradient-to-br from-[#1f4b62] to-[#112a38] rounded-lg p-12 text-center text-white relative overflow-hidden">
-        <!-- Efek Glow Kiri Atas -->
-        <div class="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-        <!-- Efek Glow Kanan Bawah -->
-        <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-        
-        <h2 class="text-4xl font-extrabold font-headline mb-6 relative z-10 drop-shadow-md">Siap untuk Memulai Era Baru Penetasan?</h2>
-        <p class="text-white/80 max-w-xl mx-auto mb-10 text-lg relative z-10">
-            Dapatkan akses ke dashboard monitoring paling canggih dan optimalkan hasil penetasan Anda sekarang juga.
-        </p>
-        
-        <a href="{{ route('login') }}" class="bg-secondary-container text-on-secondary-container px-10 py-4 rounded-full font-bold text-lg inline-block relative z-10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(226,184,139,0.4)]">
-            Masuk Sekarang
-        </a>
-    </div>
-</section>
-
-<!-- Contact & Location Section -->
-<section id="kontak-lokasi" class="bg-white py-16">
-    <div class="max-w-7xl mx-auto px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-stretch">
-            <!-- Kolom Kiri: Info Kontak -->
-            <div class="bg-[#1f4b62] text-white rounded-xl shadow-lg p-8 md:p-10 flex flex-col justify-between">
-                <div>
-                    <h2 class="text-2xl font-bold font-headline mb-8">Hubungi Kami</h2>
-                    
-                    <div class="flex flex-col space-y-6">
-                        <!-- Alamat -->
-                        <div class="flex items-start gap-4">
-                            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <p class="leading-relaxed text-white/90">
-                                Program Studi Teknologi Rekayasa Komputer (TNK)<br>
-                                Sekolah Vokasi IPB University<br>
-                                Kota Bogor, Jawa Barat
-                            </p>
+    <div class="relative z-10 max-w-7xl mx-auto px-8">
+        <div class="swiper demoTimSwiper">
+            <div class="swiper-wrapper">
+                
+                <!-- Slide 1 -->
+                <div class="swiper-slide">
+                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide1_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
+                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide1_badge') !!}</div>
+                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
                         </div>
-                        
-                        <!-- Telepon -->
-                        <div class="flex items-start gap-4">
-                            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                            <p class="text-white/90 leading-relaxed">+62 812-3456-7890</p>
-                        </div>
-                        
-                        <!-- Email -->
-                        <div class="flex items-start gap-4">
-                            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                            <a href="mailto:tnk@apps.ipb.ac.id" class="text-white/90 hover:text-cyan-400 transition-colors leading-relaxed">tnk@apps.ipb.ac.id</a>
-                        </div>
+                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
+                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide1_desc') !!}</p></div>
                     </div>
                 </div>
 
-                <!-- Social Media -->
-                <div class="flex items-center gap-5 mt-10 pt-8 border-t border-white/10">
-                    <!-- X / Twitter -->
-                    <a href="#" class="text-white/80 hover:text-cyan-400 transition-colors" aria-label="Twitter">
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    </a>
-                    <!-- Facebook -->
-                    <a href="#" class="text-white/80 hover:text-cyan-400 transition-colors" aria-label="Facebook">
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
-                    </a>
-                    <!-- Instagram -->
-                    <a href="#" class="text-white/80 hover:text-cyan-400 transition-colors" aria-label="Instagram">
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path></svg>
-                    </a>
-                    <!-- LinkedIn -->
-                    <a href="#" class="text-white/80 hover:text-cyan-400 transition-colors" aria-label="LinkedIn">
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/></svg>
-                    </a>
-                    <!-- YouTube -->
-                    <a href="#" class="text-white/80 hover:text-cyan-400 transition-colors" aria-label="YouTube">
-                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-                    </a>
+                <!-- Slide 2 -->
+                <div class="swiper-slide">
+                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide2_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
+                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide2_badge') !!}</div>
+                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1555664424-778a1e5e1b48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
+                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide2_desc') !!}</p></div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Kolom Kanan: Google Maps -->
-            <div class="h-full min-h-[350px] w-full">
-                <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.435759795034!2d106.80410061477038!3d-6.580108395241477!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c43232c45f47%3A0xc07a8fc964cd0517!2sSekolah%20Vokasi%20IPB%20University!5e0!3m2!1sen!2sid!4v1689578195843!5m2!1sen!2sid" 
-                    class="w-full h-full rounded-xl shadow-lg grayscale hover:grayscale-0 transition-all duration-500" 
-                    style="border:0;" 
-                    allowfullscreen="" 
-                    loading="lazy" 
-                    referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
+                <!-- Slide 3 -->
+                <div class="swiper-slide">
+                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide3_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
+                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide3_badge') !!}</div>
+                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
+                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide3_desc') !!}</p></div>
+                    </div>
+                </div>
+
+                <!-- Slide 4 -->
+                <div class="swiper-slide">
+                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide4_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
+                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide4_badge') !!}</div>
+                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
+                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide4_desc') !!}</p></div>
+                    </div>
+                </div>
+
+                <!-- Slide 5 -->
+                <div class="swiper-slide">
+                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide5_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
+                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide5_badge') !!}</div>
+                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
+                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide5_desc') !!}</p></div>
+                    </div>
+                </div>
+
             </div>
+            <div class="swiper-pagination !bottom-0"></div>
         </div>
     </div>
 </section>
+
+<!-- =========================================================================
+     SECTION 4: TENTANG KAMI
+     ========================================================================= -->
+<section id="tentang-kami" class="bg-white dark:bg-slate-900 py-24 overflow-hidden relative transition-colors duration-500">
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-sky-200/50 dark:bg-sky-500/10 rounded-full blur-[120px] pointer-events-none transition-colors duration-500"></div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center mb-24">
+            <h2 class="text-xs font-bold tracking-widest text-sky-600 dark:text-sky-400 uppercase">
+                {!! __('welcome.team.badge') !!}
+            </h2>
+            <h3 class="mt-2 text-3xl font-black text-slate-900 dark:text-white sm:text-4xl tracking-tight uppercase">
+                {!! __('welcome.team.title') !!}
+            </h3>
+            <div class="mt-4 mx-auto w-16 h-1 bg-sky-500 rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-20 max-w-6xl mx-auto">
+            @foreach($team as $member)
+                <div class="group relative flex flex-col items-center">
+                    <div class="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl p-6 pt-8 text-center shadow-lg group-hover:shadow-sky-500/10 dark:group-hover:shadow-sky-500/10 hover:bg-slate-100 dark:group-hover:bg-white/10 group-hover:-translate-y-2 transition-all duration-300 ease-in-out min-h-[190px] flex flex-col justify-between relative z-10">
+                        <p class="text-xs italic text-slate-600 dark:text-slate-300/80 leading-relaxed px-1 font-light">
+                            "{{ $member['quote'] }}"
+                        </p>
+                        <div class="mt-4">
+                            <h4 class="text-base font-extrabold text-slate-900 dark:text-white tracking-wide line-clamp-1 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors duration-200">
+                                {{ $member['name'] }}
+                            </h4>
+                            <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 italic mt-0.5">
+                                {{ $member['role'] }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="w-20 h-20 rounded-full bg-white dark:bg-slate-800 p-1 shadow-md -mt-10 relative z-20 group-hover:scale-105 transition-transform duration-300 ease-in-out border border-slate-200 dark:border-white/20">
+                        <div class="w-full h-full rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700">
+                            <img class="w-full h-full object-cover" src="{{ asset('images/team/' . $member['image']) }}" alt="{{ $member['name'] }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                            <div class="hidden w-full h-full bg-gradient-to-br from-[#35627C] to-[#1f4b62] text-white font-bold text-lg items-center justify-center uppercase">
+                                {{ substr($member['name'], 0, 1) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+    </div>
+</section>
+
+<!-- =========================================================================
+     SECTION 5: CALL TO ACTION (CTA) CARD
+     ========================================================================= -->
+<section class="w-full bg-slate-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-gradient-to-br from-[#1f4b62] to-[#112a38] rounded-2xl p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md">
+            <div class="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+            <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+            
+            <h2 class="text-3xl sm:text-4xl font-extrabold mb-6 relative z-10 drop-shadow-md tracking-wide">
+                {!! __('welcome.cta.title') !!}
+            </h2>
+            <p class="text-white/80 max-w-xl mx-auto mb-10 text-sm sm:text-lg relative z-10 font-light leading-relaxed">
+                {!! __('welcome.cta.desc') !!}
+            </p>
+            
+            <a href="{{ url('/login') }}" onclick="confirmLogin(event, this.href)" class="bg-white text-[#1f4b62] px-10 py-4 rounded-full font-bold text-sm inline-block relative z-10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:bg-slate-50 active:scale-[0.98]">
+                {!! __('welcome.cta.btn') !!}
+            </a>
+        </div>
+    </div>
+</section> 
+
+<!-- =========================================================================
+     SECTION 6: KONTAK & MAPS
+     ========================================================================= -->
+<section id="kontak-lokasi" class="w-full bg-slate-100 dark:bg-slate-900 overflow-hidden transition-colors duration-500">
+    <div class="flex flex-col md:flex-row w-full h-auto md:min-h-[550px]">
+        <div class="w-full md:w-1/2 bg-[#1f4b62] p-12 md:p-24 flex flex-col justify-center text-white relative">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full pointer-events-none"></div>
+            
+            <h2 class="text-4xl font-black mb-12 uppercase tracking-tighter">{!! __('welcome.contact.title') !!}</h2>
+            
+            <div class="space-y-8">
+                <!-- Alamat -->
+                <div class="flex items-start gap-6 group">
+                    <span class="material-symbols-outlined text-sky-400 bg-white/10 p-4 rounded-xl group-hover:bg-sky-400 group-hover:text-white transition-all">location_on</span>
+                    <div>
+                        <h4 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-1">{!! __('welcome.contact.address_title') !!}</h4>
+                        <p class="font-light text-sm opacity-90 leading-relaxed">{!! __('welcome.contact.address_desc') !!}</p>
+                    </div>
+                </div>
+
+                <!-- Telepon -->
+                <div class="flex items-center gap-6 group">
+                    <span class="material-symbols-outlined text-sky-400 bg-white/10 p-4 rounded-xl group-hover:bg-sky-400 group-hover:text-white transition-all">phone_iphone</span>
+                    <div>
+                        <h4 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-1">{!! __('welcome.contact.phone_title') !!}</h4>
+                        <p class="font-light text-sm opacity-90">+62 812-3456-7890</p>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="flex items-center gap-6 group">
+                    <span class="material-symbols-outlined text-sky-400 bg-white/10 p-4 rounded-xl group-hover:bg-sky-400 group-hover:text-white transition-all">mail</span>
+                    <div>
+                        <h4 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-1">{!! __('welcome.contact.email_title') !!}</h4>
+                        <p class="font-light text-sm opacity-90">tnk@apps.ipb.ac.id</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/2 h-[450px] md:h-auto bg-slate-200 dark:bg-slate-800">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.435759795034!2d106.80410061477038!3d-6.580108395241477!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69c43232c45f47%3A0xc07a8fc964cd0517!2sSekolah%20Vokasi%20IPB%20University!5e0!3m2!1sen!2sid!4v1689578195843!5m2!1sen!2sid" 
+                class="w-full h-full grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-700" 
+                style="border:0;" 
+                allowfullscreen="" 
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+</section>
+
+<!-- MODAL LIGHTBOX -->
+<div id="videoLightboxModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 p-4 opacity-0 transition-opacity duration-300 ease-in-out backdrop-blur-sm">
+    <button onclick="closeVideoModal()" class="absolute top-6 right-6 text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full flex items-center justify-center">
+        <span class="material-symbols-outlined text-3xl">close</span>
+    </button>
+    <div class="w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative scale-95 transition-transform duration-300 ease-in-out" id="modalVideoContainer">
+        <iframe id="lightboxIframe" class="w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const navbar = document.getElementById('landing-navbar');
         
-        function onScroll() {
-            if (window.scrollY > 50) {
-                navbar.classList.remove('bg-transparent');
-                navbar.classList.add('bg-[#1f4b62]/80', 'backdrop-blur-md', 'shadow-sm');
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+        
+        function updateThemeIcon() {
+            if (htmlElement.classList.contains('dark')) {
+                themeIcon.textContent = 'light_mode';
+                themeIcon.classList.add('text-amber-400');
+                themeIcon.classList.remove('text-slate-500');
             } else {
-                navbar.classList.add('bg-transparent');
-                navbar.classList.remove('bg-[#1f4b62]/80', 'backdrop-blur-md', 'shadow-sm');
+                themeIcon.textContent = 'dark_mode';
+                themeIcon.classList.remove('text-amber-400');
+                themeIcon.classList.add('text-slate-500');
             }
         }
         
+        // Cek LocalStorage
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+        updateThemeIcon();
+
+        themeToggleBtn.addEventListener('click', function() {
+            htmlElement.classList.toggle('dark');
+            updateThemeIcon();
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Pengendali Animasi Solid Navbar on Scroll
+        function onScroll() {
+            if (window.scrollY > 50) {
+                navbar.classList.remove('bg-transparent');
+                navbar.classList.add('bg-white/90', 'dark:bg-[#1f4b62]/90', 'backdrop-blur-md', 'shadow-md', 'border-b', 'border-slate-200', 'dark:border-white/10');
+            } else {
+                navbar.classList.remove('bg-white/90', 'dark:bg-[#1f4b62]/90', 'backdrop-blur-md', 'shadow-md', 'border-b', 'border-slate-200', 'dark:border-white/10');
+                navbar.classList.add('bg-transparent');
+            }
+        }
         window.addEventListener('scroll', onScroll);
-        onScroll(); // Inisialisasi saat load
+        onScroll();
+
+        // Inisialisasi Carousel Swiper Demo Tim (Infinite Loop + Manual Grab)
+        const swiper = new Swiper('.demoTimSwiper', {
+            slidesPerView: 1,
+            spaceBetween: 24,
+            loop: true,             
+            grabCursor: true,       
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+            },
+        });
     });
+
+    function openVideoModal(videoUrl, title) {
+        const modal = document.getElementById('videoLightboxModal');
+        const iframe = document.getElementById('lightboxIframe');
+        const container = document.getElementById('modalVideoContainer');
+        
+        iframe.src = videoUrl + "?autoplay=1";
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+            container.classList.remove('scale-95');
+            container.classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeVideoModal() {
+        const modal = document.getElementById('videoLightboxModal');
+        const iframe = document.getElementById('lightboxIframe');
+        const container = document.getElementById('modalVideoContainer');
+        
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+        container.classList.remove('scale-100');
+        container.classList.add('scale-95');
+        
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            iframe.src = ""; 
+        }, 300);
+    }
+
+    function confirmLogin(event, url) {
+        event.preventDefault();
+        const isDark = document.documentElement.classList.contains('dark');
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: "Apakah Anda yakin ingin masuk ke halaman Login?",
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#35627C',
+            cancelButtonColor: isDark ? '#475569' : '#94a3b8',
+            confirmButtonText: 'Ya, Lanjutkan',
+            cancelButtonText: 'Batal',
+            background: isDark ? '#1e293b' : '#fff',
+            color: isDark ? '#fff' : '#000'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    }
 </script>
 @endsection

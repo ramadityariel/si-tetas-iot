@@ -15,6 +15,13 @@ Route::get('/', function () {
     return view('welcome', compact('articles'));
 })->name('home');
 
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['id', 'en'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('lang.switch');
+
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -43,6 +50,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
     Route::get('/monitoring/export-pdf', [MonitoringController::class, 'exportPDF'])->name('monitoring.export-pdf');
+    Route::get('/monitoring/export-excel', [MonitoringController::class, 'exportExcel'])->name('monitoring.export-excel');
 
     Route::get('/prediksi', [\App\Http\Controllers\PredictionController::class, 'index'])->name('prediksi');
     Route::post('/prediksi/snapshot', [\App\Http\Controllers\PredictionController::class, 'snapshot'])->name('prediksi.snapshot');
