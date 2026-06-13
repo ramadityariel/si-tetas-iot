@@ -11,6 +11,7 @@ class MonitoringController extends Controller
     public function index()
     {
         $latest_sensor = \App\Models\SensorLog::latest()->first();
+        $anomaly_logs = \App\Models\AnomalyLog::latest()->paginate(10);
         
         // 20 data for charts (reversed for chronological order)
         $chartLogs = \App\Models\SensorLog::latest()->take(20)->get()->reverse();
@@ -22,7 +23,7 @@ class MonitoringController extends Controller
         // Paginated data for table
         $table_logs = \App\Models\SensorLog::latest()->paginate(10);
         
-        return view('monitoring', compact('latest_sensor', 'chart_labels', 'temp_data', 'humid_data', 'table_logs'));
+        return view('monitoring', compact('latest_sensor', 'chart_labels', 'temp_data', 'humid_data', 'table_logs', 'anomaly_logs'));
     }
 
     public function exportPDF()

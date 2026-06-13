@@ -28,7 +28,7 @@
     </div>
     
     <!-- Summary Bento Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
         <!-- Card 1 -->
         <div class="group bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl flex flex-col justify-between h-32 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(56,189,248,0.1)] dark:hover:border-sky-500/30 relative overflow-hidden">
             <div class="absolute -right-4 -top-4 w-20 h-20 bg-sky-50 dark:bg-sky-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
@@ -64,25 +64,39 @@
             </div>
             <div class="flex items-center gap-2 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
                 <span class="w-3 h-3 rounded-full {{ ($latest_sensor->fan_status ?? false) ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)] animate-pulse' : 'bg-slate-400 dark:bg-slate-600' }}"></span>
-                <span class="text-2xl font-black text-[#194A63] dark:text-white font-headline">{{ ($latest_sensor->fan_status ?? false) ? __('admin.dashboard.active') : 'Mati' }}</span>
+                <span class="text-xl font-black text-[#194A63] dark:text-white font-headline">{{ ($latest_sensor->fan_status ?? false) ? __('admin.monitoring.active') : __('admin.monitoring.inactive') }}</span>
             </div>
         </div>
         
-        <!-- Card 4 -->
-        <div class="group bg-gradient-to-br from-white to-slate-50 dark:from-slate-900/40 dark:to-slate-900/80 backdrop-blur-md border-y border-r border-l-4 border-slate-100 dark:border-white/10 border-l-[#715B36] dark:border-l-sky-500 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl flex flex-col justify-between h-32 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(14,165,233,0.2)] dark:hover:border-sky-500/50 relative overflow-hidden">
-            <div class="absolute right-0 bottom-0 w-32 h-32 bg-gradient-to-tl from-sky-100 to-transparent dark:from-sky-500/20 dark:to-transparent rounded-tl-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+        <!-- Card 4: Lamp Status -->
+        <div class="group bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl flex flex-col justify-between h-32 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(250,204,21,0.1)] dark:hover:border-yellow-500/30 relative overflow-hidden">
+            <div class="absolute -left-4 -top-4 w-20 h-20 bg-yellow-50 dark:bg-yellow-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
             <div class="relative z-10 flex justify-between items-start">
-                <span class="text-xs font-bold uppercase tracking-wider text-[#715B36] dark:text-sky-400 font-body">{{ __('admin.monitoring.incubation_status') }}</span>
-                <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-[#715B36] dark:group-hover:text-sky-400 group-hover:animate-bounce transition-all duration-300">egg_alt</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-body">{{ __('admin.monitoring.lamp_status') }}</span>
+                <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-yellow-500 dark:group-hover:text-yellow-400 transition-all duration-300">lightbulb</span>
             </div>
-            <div class="relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
-                <span class="text-3xl font-black text-[#194A63] dark:text-white font-headline">{{ __('admin.dashboard.day') }}-<span data-target="12" data-decimals="0">0</span></span>
+            <div class="flex items-center gap-2 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
+                <span class="w-3 h-3 rounded-full {{ ($latest_sensor->lamp_status ?? false) ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)] animate-pulse' : 'bg-slate-400 dark:bg-slate-600' }}"></span>
+                <span class="text-xl font-black text-[#194A63] dark:text-white font-headline">{{ ($latest_sensor->lamp_status ?? false) ? __('admin.monitoring.active') : __('admin.monitoring.inactive') }}</span>
+            </div>
+        </div>
+
+        <!-- Card 5: Humidifier Status -->
+        <div class="group bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl flex flex-col justify-between h-32 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(56,189,248,0.1)] dark:hover:border-sky-500/30 relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-sky-50 dark:bg-sky-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="relative z-10 flex justify-between items-start">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-body">{{ __('admin.monitoring.humidifier_status') }}</span>
+                <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors duration-300">water_drop</span>
+            </div>
+            <div class="flex items-center gap-2 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
+                <span class="w-3 h-3 rounded-full {{ ($latest_sensor->humidifier_status ?? false) ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)] animate-pulse' : 'bg-slate-400 dark:bg-slate-600' }}"></span>
+                <span class="text-xl font-black text-[#194A63] dark:text-white font-headline">{{ ($latest_sensor->humidifier_status ?? false) ? __('admin.monitoring.active') : __('admin.monitoring.inactive') }}</span>
             </div>
         </div>
     </div>
     
     <!-- Detailed Charts -->
-    <div class="grid grid-cols-1 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         <!-- Card 1: Riwayat Suhu -->
         <section class="bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl overflow-hidden transition-all duration-300">
@@ -165,6 +179,46 @@
         </div>
         <div class="p-6 border-t border-slate-100 dark:border-white/10">
             {{ $table_logs->links('pagination::tailwind') }}
+        </div>
+    </div>
+
+    <!-- Anomaly Data Sensor Log -->
+    <div class="mt-8 bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl overflow-hidden relative transition-all duration-300">
+        <div class="p-6 border-b border-slate-100 dark:border-white/10 flex justify-between items-center">
+            <h3 class="text-xl font-bold text-rose-600 dark:text-rose-400 font-headline">{{ __('admin.monitoring.anomaly_table_title') }}</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm font-body">
+                <thead class="bg-slate-50 dark:bg-white/5 text-[#194A63] dark:text-slate-300 uppercase text-xs font-bold tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">{{ __('admin.monitoring.timestamp') }}</th>
+                        <th class="px-6 py-4">{{ __('admin.dashboard.log_temp') }} (°C)</th>
+                        <th class="px-6 py-4">{{ __('admin.monitoring.humidity') }} (%)</th>
+                        <th class="px-6 py-4">{{ __('admin.monitoring.anomaly_indicator') }}</th>
+                        <th class="px-6 py-4">{{ __('admin.monitoring.description') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-white/5">
+                    @forelse($anomaly_logs as $anomaly)
+                    <tr class="bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/10 dark:hover:bg-rose-900/20 transition-colors border-l-4 border-l-rose-500">
+                        <td class="px-6 py-4 font-medium text-slate-600 dark:text-slate-400">{{ $anomaly->created_at->format('Y-m-d H:i:s') }}</td>
+                        <td class="px-6 py-4 font-semibold text-[#194A63] dark:text-white">{{ $anomaly->temperature }}</td>
+                        <td class="px-6 py-4 dark:text-slate-300">{{ $anomaly->humidity }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 rounded-full text-xs font-bold">{{ $anomaly->anomaly_type }}</span>
+                        </td>
+                        <td class="px-6 py-4 dark:text-slate-300">{{ $anomaly->description }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.monitoring.no_data') }}</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="p-6 border-t border-slate-100 dark:border-white/10">
+            {{ $anomaly_logs->links('pagination::tailwind') }}
         </div>
     </div>
 </div>

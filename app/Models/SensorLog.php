@@ -13,5 +13,7 @@ class SensorLog extends Model
         'temperature',
         'humidity',
         'fan_status',
+        'lamp_status',
+        'humidifier_status',
     ];
 }
