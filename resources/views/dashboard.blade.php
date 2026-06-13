@@ -21,7 +21,7 @@
             <div class="relative z-10">
                 <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider group-hover:text-[#194A63] dark:group-hover:text-sky-300 transition-colors">{{ __('admin.dashboard.avg_temp') }}</p>
                 <div class="flex items-baseline gap-1 transform group-hover:translate-x-1 transition-transform duration-300">
-                    <span class="font-headline text-4xl font-black text-[#194A63] dark:text-white">{{ $latest_sensor->temperature ?? 0 }}</span>
+                    <span id="count-temp" class="font-headline text-4xl font-black text-[#194A63] dark:text-white" data-target="{{ $latest_sensor->temperature ?? 0 }}" data-decimals="1">0</span>
                     <span class="text-[#194A63] dark:text-sky-400 font-bold text-xl">°C</span>
                 </div>
                 <div class="mt-4 flex items-center gap-2 transform group-hover:translate-x-1 transition-transform duration-300 delay-75">
@@ -40,7 +40,7 @@
             <div class="relative z-10">
                 <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider group-hover:text-[#194A63] dark:group-hover:text-emerald-300 transition-colors">{{ __('admin.dashboard.humidity') }}</p>
                 <div class="flex items-baseline gap-1 transform group-hover:translate-x-1 transition-transform duration-300">
-                    <span class="font-headline text-4xl font-black text-[#194A63] dark:text-white">{{ $latest_sensor->humidity ?? 0 }}</span>
+                    <span id="count-humid" class="font-headline text-4xl font-black text-[#194A63] dark:text-white" data-target="{{ $latest_sensor->humidity ?? 0 }}" data-decimals="0">0</span>
                     <span class="text-[#194A63] dark:text-sky-400 font-bold text-xl">%</span>
                 </div>
                 <div class="mt-4 flex items-center gap-2 transform group-hover:translate-x-1 transition-transform duration-300 delay-75">
@@ -136,7 +136,43 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    /* ============================================
+       COUNT-UP ANIMATION UNTUK KARTU STATISTIK
+    ============================================ */
+    function animateCountUp(element, target, decimals, duration) {
+        const start = 0;
+        const startTime = performance.now();
+
+        // Easing: easeOutQuart — cepat di awal, melambat di akhir (terasa premium)
+        function easeOutQuart(t) {
+            return 1 - Math.pow(1 - t, 4);
+        }
+
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeOutQuart(progress);
+            const current = start + (target - start) * easedProgress;
+
+            element.textContent = current.toFixed(decimals);
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                element.textContent = target.toFixed(decimals);
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+        // Jalankan animasi count-up untuk semua elemen [data-target]
+        document.querySelectorAll('[data-target]').forEach(function(el) {
+            const target   = parseFloat(el.dataset.target) || 0;
+            const decimals = parseInt(el.dataset.decimals)  || 0;
+            animateCountUp(el, target, decimals, 1800); // 1800ms durasi
+        });
         const ctx = document.getElementById('temperatureChart').getContext('2d');
         const isDark = document.documentElement.classList.contains('dark');
         

@@ -37,7 +37,7 @@
                 <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors duration-300">thermostat</span>
             </div>
             <div class="flex items-baseline gap-1 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
-                <span class="text-4xl font-extrabold text-[#194A63] dark:text-white font-headline">{{ $latest_sensor->temperature ?? 0 }}</span>
+                <span class="text-4xl font-extrabold text-[#194A63] dark:text-white font-headline" data-target="{{ $latest_sensor->temperature ?? 0 }}" data-decimals="1">0</span>
                 <span class="text-xl font-bold text-[#35627C] dark:text-sky-400 font-headline">°C</span>
             </div>
         </div>
@@ -50,7 +50,7 @@
                 <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors duration-300">humidity_percentage</span>
             </div>
             <div class="flex items-baseline gap-1 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
-                <span class="text-4xl font-extrabold text-[#194A63] dark:text-white font-headline">{{ $latest_sensor->humidity ?? 0 }}</span>
+                <span class="text-4xl font-extrabold text-[#194A63] dark:text-white font-headline" data-target="{{ $latest_sensor->humidity ?? 0 }}" data-decimals="0">0</span>
                 <span class="text-xl font-bold text-[#35627C] dark:text-sky-400 font-headline">%</span>
             </div>
         </div>
@@ -76,7 +76,7 @@
                 <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-[#715B36] dark:group-hover:text-sky-400 group-hover:animate-bounce transition-all duration-300">egg_alt</span>
             </div>
             <div class="relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
-                <span class="text-3xl font-black text-[#194A63] dark:text-white font-headline">{{ __('admin.dashboard.day') }}-12</span>
+                <span class="text-3xl font-black text-[#194A63] dark:text-white font-headline">{{ __('admin.dashboard.day') }}-<span data-target="12" data-decimals="0">0</span></span>
             </div>
         </div>
     </div>
@@ -171,7 +171,36 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    /* ============================================
+       COUNT-UP ANIMATION UNTUK KARTU STATISTIK
+    ============================================ */
+    function animateCountUp(element, target, decimals, duration) {
+        const startTime = performance.now();
+
+        function easeOutQuart(t) {
+            return 1 - Math.pow(1 - t, 4);
+        }
+
+        function update(currentTime) {
+            const elapsed  = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const current  = target * easeOutQuart(progress);
+            element.textContent = current.toFixed(decimals);
+            if (progress < 1) requestAnimationFrame(update);
+            else element.textContent = target.toFixed(decimals);
+        }
+
+        requestAnimationFrame(update);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+        // Jalankan animasi count-up untuk semua elemen [data-target]
+        document.querySelectorAll('[data-target]').forEach(function(el) {
+            const target   = parseFloat(el.dataset.target) || 0;
+            const decimals = parseInt(el.dataset.decimals)  || 0;
+            animateCountUp(el, target, decimals, 1800);
+        });
+
         // --- AJAX Pagination Logic ---
         const tableContainer = document.getElementById('table-container');
         

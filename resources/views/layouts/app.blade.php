@@ -45,7 +45,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 py-12 mt-20">
+    <footer class="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 py-12">
         <div class="max-w-7xl mx-auto px-12 flex flex-col md:flex-row justify-between items-center gap-8">
             <div class="flex flex-col items-center md:items-start gap-4">
                 <div class="font-black text-[#194A63] text-2xl font-headline">Si-Tetas</div>

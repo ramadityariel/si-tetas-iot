@@ -18,7 +18,7 @@
         <!-- Center Links -->
         <div class="hidden md:flex items-center gap-10 text-white/90 text-sm font-semibold tracking-wide">
             <a href="{{ url('/#beranda') }}" class="hover:text-white transition-colors">Home</a>
-            <a href="{{ url('/#artikel-terbaru') }}" class="hover:text-white transition-colors">Blog</a>
+            <a href="{{ route('blog.index') }}" class="hover:text-white transition-colors text-white">Blog</a>
             <a href="{{ url('/#tentang-kami') }}" class="hover:text-white transition-colors">Tentang Kami</a>
             <a href="{{ url('/#demo-operasional') }}" class="hover:text-white transition-colors">Demo</a>
         </div>

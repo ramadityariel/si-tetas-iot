@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "kode": "EKMA4111",
+    "judul": "Pengantar Bisnis",
+    "kategori": "FE",
+    "upbjj": "Jakarta",
+    "lokasiRak": "A1-01",
+    "harga": 65000,
+    "qty": 150,
+    "safety": 50,
+    "catatanHTML": "Buku cetakan terbaru 2023"
+  },
+  {
+    "id": 2,
+    "kode": "MKDU4111",
+    "judul": "Pendidikan Kewarganegaraan",
+    "kategori": "MKDU",
+    "upbjj": "Bandung",
+    "lokasiRak": "B2-04",
+    "harga": 45000,
+    "qty": 20,
+    "safety": 30,
+    "catatanHTML": "Buku edisi lama, butuh revisi"
+  },
+  {
+    "id": 3,
+    "kode": "ISIP4215",
+    "judul": "Pengantar Statistik Sosial",
+    "kategori": "FHISIP",
+    "upbjj": "Jakarta",
+    "lokasiRak": "C3-02",
+    "harga": 70000,
+    "qty": 0,
+    "safety": 25,
+    "catatanHTML": "Sedang dalam proses cetak ulang"
+  },
+  {
+    "id": 4,
+    "kode": "PDGK4101",
+    "judul": "Keterampilan Berbahasa Indonesia SD",
+    "kategori": "FKIP",
+    "upbjj": "Surabaya",
+    "lokasiRak": "D1-05",
+    "harga": 80000,
+    "qty": 100,
+    "safety": 40,
+    "catatanHTML": "Stok aman untuk 1 semester"
+  },
+  {
+    "id": 5,
+    "kode": "EKMA4215",
+    "judul": "Manajemen Operasi",
+    "kategori": "FE",
+    "upbjj": "Surabaya",
+    "lokasiRak": "D2-01",
+    "harga": 75000,
+    "qty": 15,
+    "safety": 40,
+    "catatanHTML": "Harus segera re-order"
+  }
+]

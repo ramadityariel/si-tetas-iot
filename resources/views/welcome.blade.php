@@ -38,6 +38,46 @@
     .swiper-wrapper {
         z-index: 10 !important;
     }
+
+    /* =============================================
+       STACKED SCROLL SECTIONS EFFECT
+       Demo section jadi sticky, Tentang Kami naik
+       menutupinya seperti kartu ditumpuk
+    ============================================= */
+    .stack-wrapper {
+        position: relative;
+    }
+
+    /* Section Demo: sticky sehingga tertahan ketika di-scroll */
+    #demo-operasional {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        /* Pastikan min-height cukup agar sticky bekerja */
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Section Tentang Kami: naik menutupi Demo dengan efek card */
+    #tentang-kami {
+        position: relative;
+        z-index: 2;
+        border-radius: 32px 32px 0 0;
+        box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.18);
+        margin-top: -40px; /* Tumpang tindih sedikit dengan section di atas */
+    }
+
+    /* Dark mode shadow lebih gelap */
+    .dark #tentang-kami {
+        box-shadow: 0 -20px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Pastikan overflow hidden agar border-radius terlihat bersih */
+    #tentang-kami {
+        overflow: hidden;
+    }
 </style>
 
 <!-- =========================================================================
@@ -53,7 +93,7 @@
         <!-- Center Nav Links -->
         <div class="hidden md:flex items-center gap-10 text-slate-800 dark:text-white/90 text-sm font-semibold tracking-wide">
             <a href="{{ url('/#beranda') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.home') !!}</a>
-            <a href="{{ url('/#artikel-terbaru') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.blog') !!}</a>
+            <a href="{{ route('blog.index') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.blog') !!}</a>
             <a href="{{ url('/#demo-operasional') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.demo') !!}</a>
             <a href="{{ url('/#tentang-kami') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.about') !!}</a>
         </div>
@@ -215,7 +255,12 @@
 </section>
 
 <!-- =========================================================================
-     SECTION 3: DEMO TIM
+     SECTION 3 + 4: STACKED SCROLL WRAPPER (Demo sticky, Tim naik di atasnya)
+     ========================================================================= -->
+<div class="stack-wrapper">
+
+<!-- =========================================================================
+     SECTION 3: DEMO TIM (sticky — tertahan saat section berikutnya naik)
      ========================================================================= -->
 <section id="demo-operasional" class="py-24 relative overflow-hidden bg-slate-100 dark:bg-slate-900 transition-colors duration-500">
     <div class="absolute inset-0 z-0">
@@ -299,9 +344,9 @@
 </section>
 
 <!-- =========================================================================
-     SECTION 4: TENTANG KAMI
+     SECTION 4: TENTANG KAMI (slide naik menutupi section Demo)
      ========================================================================= -->
-<section id="tentang-kami" class="bg-white dark:bg-slate-900 py-24 overflow-hidden relative transition-colors duration-500">
+<section id="tentang-kami" class="bg-white dark:bg-slate-900 py-24 relative transition-colors duration-500">
     <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-sky-200/50 dark:bg-sky-500/10 rounded-full blur-[120px] pointer-events-none transition-colors duration-500"></div>
 
     <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
@@ -319,7 +364,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-20 max-w-6xl mx-auto">
             @foreach($team as $member)
                 <div class="group relative flex flex-col items-center">
-                    <div class="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl p-6 pt-8 text-center shadow-lg group-hover:shadow-sky-500/10 dark:group-hover:shadow-sky-500/10 hover:bg-slate-100 dark:group-hover:bg-white/10 group-hover:-translate-y-2 transition-all duration-300 ease-in-out min-h-[190px] flex flex-col justify-between relative z-10">
+                    <div class="w-full bg-slate-50 dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-xl px-6 pt-8 pb-12 text-center shadow-lg group-hover:shadow-sky-500/10 dark:group-hover:shadow-sky-500/10 hover:bg-slate-100 dark:group-hover:bg-white/10 group-hover:-translate-y-2 transition-all duration-300 ease-in-out min-h-[220px] flex flex-col justify-between relative z-10">
                         <p class="text-xs italic text-slate-600 dark:text-slate-300/80 leading-relaxed px-1 font-light">
                             "{{ $member['quote'] }}"
                         </p>
@@ -347,14 +392,22 @@
     </div>
 </section>
 
+</div><!-- END .stack-wrapper -->
+
 <!-- =========================================================================
      SECTION 5: CALL TO ACTION (CTA) CARD
      ========================================================================= -->
 <section class="w-full bg-slate-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
     <div class="max-w-7xl mx-auto">
-        <div class="bg-gradient-to-br from-[#1f4b62] to-[#112a38] rounded-2xl p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md">
-            <div class="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-            <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="bg-slate-900 rounded-2xl p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-2xl border border-slate-200 dark:border-white/10 backdrop-blur-md">
+            <!-- Background Image -->
+            <div class="absolute inset-0 z-0">
+                <img src="{{ asset('images/bg peternakan.png') }}" alt="Peternakan Background" class="w-full h-full object-cover opacity-80" onerror="this.src='https://images.unsplash.com/photo-1596568359553-9799b66bb159?q=80&w=2070&auto=format&fit=crop'">
+                <div class="absolute inset-0 bg-gradient-to-br from-[#1f4b62]/75 to-[#112a38]/85 z-0"></div>
+            </div>
+            
+            <div class="absolute -top-20 -left-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none z-0"></div>
+            <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none z-0"></div>
             
             <h2 class="text-3xl sm:text-4xl font-extrabold mb-6 relative z-10 drop-shadow-md tracking-wide">
                 {!! __('welcome.cta.title') !!}
@@ -378,34 +431,52 @@
         <div class="w-full md:w-1/2 bg-[#1f4b62] p-12 md:p-24 flex flex-col justify-center text-white relative">
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full pointer-events-none"></div>
             
-            <h2 class="text-4xl font-black mb-12 uppercase tracking-tighter">{!! __('welcome.contact.title') !!}</h2>
+            <h2 class="text-4xl font-black mb-12 uppercase tracking-tighter">
+                {!! __('welcome.contact.title') !!}
+            </h2>
             
-            <div class="space-y-8">
-                <!-- Alamat -->
-                <div class="flex items-start gap-6 group">
-                    <span class="material-symbols-outlined text-sky-400 bg-white/10 p-4 rounded-xl group-hover:bg-sky-400 group-hover:text-white transition-all">location_on</span>
-                    <div>
-                        <h4 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-1">{!! __('welcome.contact.address_title') !!}</h4>
-                        <p class="font-light text-sm opacity-90 leading-relaxed">{!! __('welcome.contact.address_desc') !!}</p>
-                    </div>
+            <div class="space-y-6">
+                <!-- Alamat Kampus Bogor -->
+                <div>
+                    <p class="font-light text-base opacity-90 leading-relaxed">
+                        KAMPUS BOGOR – Jl. Kumbang No.14,<br>
+                        Kelurahan Babakan, Kecamatan Bogor<br>
+                        Tengah, Kota Bogor, Jawa Barat 16128
+                    </p>
                 </div>
 
+                <!-- Alamat Kampus Sukabumi -->
+                <div>
+                    <p class="font-light text-base opacity-90 leading-relaxed">
+                        KAMPUS SUKABUMI – Jl. Sarasa No.<br>
+                        45, Babakan, Kec. Cibeureum, Kota<br>
+                        Sukabumi, Jawa Barat 43142
+                    </p>
+                </div>
+
+
                 <!-- Telepon -->
-                <div class="flex items-center gap-6 group">
-                    <span class="material-symbols-outlined text-sky-400 bg-white/10 p-4 rounded-xl group-hover:bg-sky-400 group-hover:text-white transition-all">phone_iphone</span>
-                    <div>
-                        <h4 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-1">{!! __('welcome.contact.phone_title') !!}</h4>
-                        <p class="font-light text-sm opacity-90">+62 812-3456-7890</p>
-                    </div>
+                <div class="flex items-center gap-4 group mb-6">
+                    <span class="material-symbols-outlined text-white group-hover:text-sky-300 transition-colors">call</span>
+                    <span class="font-light text-base opacity-90 transition-colors">
+                        (0251) 8348007
+                    </span>
                 </div>
 
                 <!-- Email -->
-                <div class="flex items-center gap-6 group">
-                    <span class="material-symbols-outlined text-sky-400 bg-white/10 p-4 rounded-xl group-hover:bg-sky-400 group-hover:text-white transition-all">mail</span>
-                    <div>
-                        <h4 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-1">{!! __('welcome.contact.email_title') !!}</h4>
-                        <p class="font-light text-sm opacity-90">tnk@apps.ipb.ac.id</p>
-                    </div>
+                <div class="flex items-center gap-4 group mb-6">
+                    <span class="material-symbols-outlined text-white group-hover:text-sky-300 transition-colors">mail</span>
+                    <a href="mailto:sv@apps.ipb.ac.id" class="font-light text-base opacity-90 hover:text-sky-300 hover:opacity-100 transition-colors">
+                        sv@apps.ipb.ac.id
+                    </a>
+                </div>
+
+                <!-- Website TNK -->
+                <div class="flex items-center gap-4 group">
+                    <span class="material-symbols-outlined text-white group-hover:text-sky-300 transition-colors">language</span>
+                    <a href="https://sv.ipb.ac.id/teknologi-dan-manajemen-ternak/" target="_blank" rel="noopener noreferrer" class="font-light text-base opacity-90 hover:text-sky-300 hover:opacity-100 transition-colors">
+                        Teknologi dan Manajemen Ternak
+                    </a>
                 </div>
             </div>
         </div>
@@ -489,7 +560,13 @@
             slidesPerView: 1,
             spaceBetween: 24,
             loop: true,             
-            grabCursor: true,       
+            grabCursor: true,
+            freeMode: true,       // Membuat geseran (swipe) benar-benar mengalir bebas
+            mousewheel: {         // Memungkinkan pengguna scroll/swipe pakai touchpad laptop atau mouse wheel
+                forceToAxis: true,
+            },
+            speed: 800,           // Membuat transisi slide lebih halus (800ms)
+            touchRatio: 1.5,      // Membuat swiping lebih sensitif/responsif terhadap tarikan
             pagination: {
                 el: '.swiper-pagination',
                 clickable: true,

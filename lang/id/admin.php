@@ -23,7 +23,7 @@ return [
     ],
     'login' => [
         'back' => 'Kembali ke Beranda',
-        'title' => 'Masuk untuk memulai sesi Anda',
+        'title' => 'Masuk',
         'email' => 'Alamat Email',
         'email_ph' => 'contoh@email.com',
         'password' => 'Kata Sandi',

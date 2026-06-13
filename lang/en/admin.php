@@ -23,7 +23,7 @@ return [
     ],
     'login' => [
         'back' => 'Back to Home',
-        'title' => 'Sign in to start your session',
+        'title' => 'Login',
         'email' => 'Email Address',
         'email_ph' => 'example@email.com',
         'password' => 'Password',

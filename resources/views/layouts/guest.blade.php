@@ -12,7 +12,7 @@
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen flex items-center justify-center p-6 bg-background font-body text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<body class="bg-background font-body text-on-background selection:bg-primary-container selection:text-on-primary-container m-0 p-0">
     @yield('content')
 </body>
 </html>

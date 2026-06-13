@@ -16,13 +16,7 @@
                     <h3 class="text-lg font-bold text-[#194A63] dark:text-white font-headline">{{ __('admin.prediction.camera_title') }}</h3>
                 </div>
                 
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <label for="tray_type" class="text-sm font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">{{ __('admin.prediction.analysis_mode') }}</label>
-                    <select id="tray_type" class="border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 text-sm font-medium focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 cursor-pointer shadow-sm">
-                        <option value="42_butir" selected>{{ __('admin.prediction.mass_mode') }}</option>
-                        <option value="1_butir">{{ __('admin.prediction.single_mode') }}</option>
-                    </select>
-                </div>
+                <input type="hidden" id="tray_type" value="42_butir">
 
                 <button id="btn-snapshot" class="bg-[#35627C] dark:bg-sky-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 w-full sm:w-auto justify-center">
                     <span class="material-symbols-outlined text-sm">camera</span>
@@ -31,7 +25,7 @@
             </div>
             
             <div class="relative bg-slate-900 flex justify-center items-center min-h-[400px]">
-                <video id="camera-stream" autoplay playsinline class="w-full max-h-[500px] object-cover"></video>
+                <video id="camera-stream" autoplay playsinline muted class="w-full max-h-[500px] object-cover"></video>
                 <canvas id="snapshot-canvas" class="hidden"></canvas>
                 <div id="prediction-result" class="hidden absolute inset-0 flex items-center justify-center bg-black/60 z-20 backdrop-blur-sm">
                     <div class="text-center">
@@ -45,7 +39,31 @@
                     </div>
                 </div>
                 <div id="loading-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-black/80 z-30 flex-col gap-4 backdrop-blur-sm">
-                    <div class="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
+                    <style>
+                        @keyframes hatch {
+                            0% { transform: rotate(0deg) scale(1); }
+                            15% { transform: rotate(15deg) scale(1.05); }
+                            30% { transform: rotate(-10deg) scale(1); }
+                            45% { transform: rotate(5deg) scale(1.02); }
+                            60% { transform: rotate(-5deg) scale(1); }
+                            75% { transform: rotate(2deg) scale(1.01); }
+                            100% { transform: rotate(0deg) scale(1); }
+                        }
+                        .animate-hatch {
+                            animation: hatch 1.5s ease-in-out infinite;
+                            transform-origin: bottom center;
+                        }
+                    </style>
+                    <div class="w-16 h-16 animate-hatch">
+                        <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_15px_rgba(254,240,138,0.4)]" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Egg body -->
+                            <path fill="#fef08a" d="M50 5C30 5 20 40 20 65C20 85 30 95 50 95C70 95 80 85 80 65C80 40 70 5 50 5Z" />
+                            <!-- Egg inner shading -->
+                            <path fill="#fde047" d="M50 15C38 15 30 45 30 65C30 80 38 88 50 88C62 88 70 80 70 65C70 45 62 15 50 15Z" opacity="0.6"/>
+                            <!-- Crack line -->
+                            <path fill="none" stroke="#ca8a04" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M 35 45 L 48 53 L 42 66 L 58 73" opacity="0.8"/>
+                        </svg>
+                    </div>
                     <p class="text-white font-bold tracking-widest uppercase text-sm">{{ __('admin.prediction.analyzing') }}</p>
                 </div>
             </div>
@@ -178,7 +196,8 @@ document.addEventListener("DOMContentLoaded", function() {
         navigator.mediaDevices.getUserMedia({ video: true })
         .then(function(stream) {
             video.srcObject = stream;
-            setTimeout(() => { video.play(); }, 150);
+            video.muted = true;
+            video.play().catch(e => console.error("Autoplay failed:", e));
         })
         .catch(function(err) {
             console.error("Akses kamera ditolak/gagal: ", err);
