@@ -133,11 +133,6 @@
     
     <!-- Monitoring Tables/Alerts -->
     <div id="table-container" class="bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl overflow-hidden relative transition-all duration-300">
-        <!-- Loading Overlay -->
-        <div id="table-loader" class="hidden absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm z-10 flex items-center justify-center">
-            <span class="material-symbols-outlined animate-spin text-4xl text-[#35627C] dark:text-sky-400" data-icon="progress_activity">progress_activity</span>
-        </div>
-        
         <div class="p-6 border-b border-slate-100 dark:border-white/10">
             <h3 class="text-xl font-bold text-[#194A63] dark:text-white font-headline">{{ __('admin.monitoring.log_title') }}</h3>
         </div>
@@ -269,10 +264,6 @@
             if (link && link.href && link.href.includes('page=')) {
                 e.preventDefault();
                 
-                // Show loader
-                const loader = document.getElementById('table-loader');
-                if (loader) loader.classList.remove('hidden');
-                
                 fetch(link.href)
                     .then(response => response.text())
                     .then(html => {
@@ -284,13 +275,29 @@
                             tableContainer.innerHTML = newContainer.innerHTML;
                         }
                     })
-                    .catch(err => console.error("Failed to fetch page:", err))
-                    .finally(() => {
-                        const loader = document.getElementById('table-loader');
-                        if (loader) loader.classList.add('hidden');
-                    });
+                    .catch(err => console.error("Failed to fetch page:", err));
             }
         });
+
+        // --- Auto refresh Sensor Activity Log setiap 5 detik ---
+        const refreshIntervalMs = 5000;
+        setInterval(() => {
+            fetch(window.location.href, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContainer = doc.getElementById('table-container');
+
+                    if (newContainer) {
+                        tableContainer.innerHTML = newContainer.innerHTML;
+                    }
+                })
+                .catch(err => console.error('Failed to refresh log:', err));
+        }, refreshIntervalMs);
 
         // --- Chart Logic ---
         const labels = {!! json_encode($chart_labels) !!};

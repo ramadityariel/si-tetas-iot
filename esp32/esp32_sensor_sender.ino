@@ -1,14 +1,8 @@
 /**
  * ============================================================
- *  Si-Tetas IoT — ESP32 Data Sender
+ * Si-Tetas IoT — ESP32 Data Sender (Disesuaikan)
  * ============================================================
- *  Mengirim data sensor suhu & kelembaban ke Laravel API.
- *  Library yang diperlukan (install via Arduino Library Manager):
- *    - ArduinoJson  (versi 7.x atau 6.x)
- *
- *  Library bawaan ESP32 (sudah tersedia):
- *    - WiFi.h
- *    - HTTPClient.h
+ * Mengirim data sensor suhu & kelembaban ke Laravel API Lokal.
  * ============================================================
  */
 
@@ -17,20 +11,20 @@
 #include <ArduinoJson.h>
 
 // ── Konfigurasi WiFi ──────────────────────────────────────────────────────────
-const char* WIFI_SSID     = "NAMA_WIFI_ANDA";   // ← Ganti dengan SSID WiFi Anda
-const char* WIFI_PASSWORD = "KATA_SANDI_WIFI";  // ← Ganti dengan password WiFi Anda
+const char* WIFI_SSID     = "Lab Ternak";   
+const char* WIFI_PASSWORD = "LabTNK24";  
 
-// ── Konfigurasi API Laravel ───────────────────────────────────────────────────
-// Ganti IP di bawah dengan IP komputer Anda (cek via 'ipconfig' di CMD)
-// Pastikan ESP32 dan laptop berada di jaringan WiFi yang SAMA.
-// Format: http://<IP_LAPTOP>:8000/api/kirim-data
-const char* API_URL = "http://10.188.101.217:8000/api/kirim-data";
+// ── Konfigurasi API Laravel & Security ────────────────────────────────────────
+// Mengarah ke IP Lokal Laravel Anda (Port 8000)
+const String BASE_URL     = "http://10.188.101.217:8001/"; 
+const char* apiKey        = "815171f9b522f1cd4cd95cb1d4410311"; // API Key disamakan
 
 // ── Interval pengiriman data (10 detik) ──────────────────────────────────────
 const unsigned long INTERVAL_MS = 10000;
 
-// ── Variabel waktu ────────────────────────────────────────────────────────────
+// ── Variabel waktu & Threshold Dinamis ────────────────────────────────────────
 unsigned long lastSendTime = 0;
+float thresholdSuhuMax = 37.5; // Menyimpan data sinkronisasi dari web jika ada
 
 // ─────────────────────────────────────────────────────────────────────────────
 void setup() {
@@ -38,7 +32,7 @@ void setup() {
     delay(500);
     Serial.println();
     Serial.println("==============================================");
-    Serial.println("  Si-Tetas ESP32 — Memulai...");
+    Serial.println("  Si-Tetas ESP32 (Laravel Lokal) — Memulai...");
     Serial.println("==============================================");
 
     // Koneksi ke WiFi
@@ -60,7 +54,7 @@ void setup() {
     Serial.print("  IP Address ESP32  : ");
     Serial.println(WiFi.localIP());
     Serial.print("  API Target        : ");
-    Serial.println(API_URL);
+    Serial.println(BASE_URL + "api/kirim-data");
     Serial.println("==============================================\n");
 }
 
@@ -72,7 +66,7 @@ void loop() {
     if (now - lastSendTime >= INTERVAL_MS) {
         lastSendTime = now;
 
-        // ── Simulasi data sensor (ganti dengan pembacaan DHT22 jika ada) ──────
+        // ── Simulasi data sensor ─────────────────────────────────────────────
         float suhu       = 36.0 + random(0, 25) / 10.0;  // Rentang: 36.0 – 38.4°C
         float kelembaban = 55.0 + random(0, 15);          // Rentang: 55.0 – 70.0%
 
@@ -86,9 +80,6 @@ void loop() {
 // ─────────────────────────────────────────────────────────────────────────────
 /**
  * Kirim data sensor ke endpoint Laravel via HTTP POST (JSON).
- *
- * @param suhu       Nilai suhu dalam °C
- * @param kelembaban Nilai kelembaban dalam %
  */
 void kirimDataKeServer(float suhu, float kelembaban) {
     // Pastikan WiFi masih terhubung
@@ -99,31 +90,54 @@ void kirimDataKeServer(float suhu, float kelembaban) {
         return;
     }
 
+    WiFiClient client; // Menggunakan WiFiClient biasa untuk protokol http://
     HTTPClient http;
-    http.begin(API_URL);
+    
+    // Gabungkan BASE_URL dengan endpoint API Laravel
+    String endpoint = BASE_URL + "api/kirim-data";
+    http.begin(client, endpoint);
+    
+    // Tambahkan header pengenal identitas dan tipe data
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Accept", "application/json");
+    http.addHeader("X-API-KEY", apiKey); // Menyertakan API Key Anda
 
-    // ── Buat payload JSON ─────────────────────────────────────────────────────
-    // ArduinoJson v7: JsonDocument
-    // ArduinoJson v6: StaticJsonDocument<128> doc;
-    JsonDocument doc;
-    doc["suhu"]       = suhu;
-    doc["kelembaban"] = kelembaban;
+    // ── Buat payload JSON (Mendukung ArduinoJson v6/v7) ───────────────────────
+    JsonDocument docOut;
+    docOut["suhu"]       = suhu;
+    docOut["kelembaban"] = kelembaban;
+    docOut["timestamp"]  = 0; // Set 0 karena tidak pakai NTP di kode ringkas ini
 
-    String payload;
-    serializeJson(doc, payload);
+    String requestBody;
+    serializeJson(docOut, requestBody);
 
-    Serial.printf("  Payload  : %s\n", payload.c_str());
+    Serial.printf("  Payload   : %s\n", requestBody.c_str());
 
     // ── Kirim HTTP POST ───────────────────────────────────────────────────────
-    int httpCode = http.POST(payload);
+    int httpCode = http.POST(requestBody);
 
-    if (httpCode > 0) {
+    if (httpCode == HTTP_CODE_OK || httpCode == 201) {
         String responseBody = http.getString();
-        Serial.printf("  HTTP %d   : %s\n\n", httpCode, responseBody.c_str());
+        Serial.printf("  HTTP %d   : %s\n", httpCode, responseBody.c_str());
+        
+        // ── Proses Feedback dari Web (Jika ada data balik dari Laravel) ───────
+        JsonDocument docIn;
+        DeserializationError error = deserializeJson(docIn, responseBody);
+        if (!error) {
+            if (docIn.containsKey("suhu_max")) {
+                thresholdSuhuMax = docIn["suhu_max"];
+                Serial.printf("  [SYNC] Terkoneksi! Suhu Max Web: %.1f C\n\n", thresholdSuhuMax);
+            } else {
+                Serial.println("  [SYNC] Data berhasil tersimpan di web.\n");
+            }
+        }
     } else {
-        Serial.printf("  [ERROR] HTTP gagal: %s\n\n", http.errorToString(httpCode).c_str());
+        if (httpCode > 0) {
+            String responseBody = http.getString();
+            Serial.printf("  [ERROR] HTTP %d : %s\n\n", httpCode, responseBody.c_str());
+        } else {
+            Serial.printf("  [ERROR] HTTP gagal: %s\n\n", http.errorToString(httpCode).c_str());
+        }
     }
 
     http.end();
