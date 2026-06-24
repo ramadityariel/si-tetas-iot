@@ -11,6 +11,21 @@ class MonitoringController extends Controller
     public function index()
     {
         $latest_sensor = \App\Models\SensorLog::latest()->first();
+        
+        // Catch-up check for anomalies on the latest 15 sensor logs
+        $recent_logs = \App\Models\SensorLog::latest()->take(15)->get();
+        if ($recent_logs->isNotEmpty()) {
+            $existing_timestamps = \App\Models\AnomalyLog::whereIn('created_at', $recent_logs->pluck('created_at'))
+                ->pluck('created_at')
+                ->map(fn($t) => (string)$t)
+                ->toArray();
+            foreach ($recent_logs as $log) {
+                if (!in_array((string)$log->created_at, $existing_timestamps)) {
+                    \App\Models\AnomalyLog::detectAndSave($log);
+                }
+            }
+        }
+        
         $anomaly_logs = \App\Models\AnomalyLog::latest()->paginate(10);
         
         // 20 data for charts (reversed for chronological order)

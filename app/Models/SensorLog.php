@@ -16,4 +16,14 @@ class SensorLog extends Model
         'lamp_status',
         'humidifier_status',
     ];
+
+    /**
+     * Boot the model.
+     */
+    protected static function booted()
+    {
+        static::created(function ($sensorLog) {
+            \App\Models\AnomalyLog::detectAndSave($sensorLog);
+        });
+    }
 }

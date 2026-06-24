@@ -64,10 +64,33 @@ class DatabaseSeeder extends Seeder
                 'temperature' => rand(365, 385) / 10,
                 'humidity' => rand(55, 65),
                 'fan_status' => (bool) rand(0, 1),
-                'created_at' => $now->copy()->subMinutes(20 - $i),
-                'updated_at' => $now->copy()->subMinutes(20 - $i),
+                'lamp_status' => (bool) rand(0, 1),
+                'humidifier_status' => (bool) rand(0, 1),
+                'created_at' => $now->copy()->subMinutes(22 - $i),
+                'updated_at' => $now->copy()->subMinutes(22 - $i),
             ]);
         }
+
+        // Generate explicit outlier sensor logs to trigger Isolation Forest anomalies
+        \App\Models\SensorLog::create([
+            'temperature' => 42.5,
+            'humidity' => 20,
+            'fan_status' => false,
+            'lamp_status' => true,
+            'humidifier_status' => false,
+            'created_at' => $now->copy()->subMinutes(2),
+            'updated_at' => $now->copy()->subMinutes(2),
+        ]);
+
+        \App\Models\SensorLog::create([
+            'temperature' => 31.2,
+            'humidity' => 95,
+            'fan_status' => true,
+            'lamp_status' => false,
+            'humidifier_status' => true,
+            'created_at' => $now->copy()->subMinutes(1),
+            'updated_at' => $now->copy()->subMinutes(1),
+        ]);
 
         // Generate Dummy HatchPrediction
         \App\Models\HatchPrediction::create([
