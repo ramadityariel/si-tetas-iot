@@ -24,20 +24,41 @@
                 </button>
             </div>
             
-            <div class="relative bg-slate-900 flex justify-center items-center min-h-[400px]">
-                <video id="camera-stream" autoplay playsinline muted class="w-full max-h-[500px] object-cover"></video>
+            {{-- ============================================================
+                 Area Video Kamera
+                 Mode 1 (Default) : MJPEG stream dari FastAPI /video_feed
+                   → Tidak butuh HTTPS, bekerja dari IP LAN manapun.
+                   → Snapshot diambil via Canvas dari elemen <img>.
+                 Mode 2 (Fallback): WebRTC getUserMedia
+                   → Aktif otomatis jika FastAPI tidak tersedia.
+                   → Memerlukan HTTPS atau localhost.
+                 ============================================================ --}}
+            <div class="relative bg-slate-900 flex justify-center items-center min-h-[400px]" id="camera-wrapper">
+
+                {{-- MJPEG Stream dari FastAPI --}}
+                <img id="mjpeg-stream"
+                     src="http://127.0.0.1:8000/video_feed"
+                     crossorigin="anonymous"
+                     alt="Live Camera Stream"
+                     class="w-full max-h-[500px] object-contain"
+                />
+
+
                 <canvas id="snapshot-canvas" class="hidden"></canvas>
-                <div id="prediction-result" class="hidden absolute inset-0 flex items-center justify-center bg-black/60 z-20 backdrop-blur-sm">
-                    <div class="text-center">
-                        <img id="snapshot-img" class="max-w-xs md:max-w-md border-4 border-white/20 dark:border-slate-800 rounded-xl shadow-2xl mb-6 mx-auto object-cover"/>
-                        <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-8 py-4 rounded-xl inline-block shadow-xl border border-white/20">
-                            <h4 class="text-3xl font-black text-[#194A63] dark:text-sky-400 font-headline" id="pred-text">{{ __('admin.prediction.fertil') }}</h4>
-                            <p class="text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.prediction.confidence') }} <span id="pred-score" class="text-[#35627C] dark:text-sky-300">95</span>%</p>
+
+                <div id="prediction-result" class="hidden fixed inset-0 flex items-center justify-center bg-black/70 z-50 backdrop-blur-sm p-4">
+                    <div class="text-center max-w-lg w-full bg-slate-900/80 rounded-2xl p-6 shadow-2xl border border-white/10">
+                        <img id="snapshot-img" class="max-w-full max-h-60 border-4 border-white/20 rounded-xl shadow-2xl mb-5 mx-auto object-cover"/>
+                        <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-8 py-5 rounded-xl inline-block shadow-xl border border-white/20 w-full">
+                            <h4 class="text-2xl font-black text-[#194A63] dark:text-sky-400 font-headline" id="pred-text">{{ __('admin.prediction.fertil') }}</h4>
+                            <p class="text-slate-500 dark:text-slate-400 font-bold mt-2">{{ __('admin.prediction.confidence') }} <span id="pred-score" class="text-[#35627C] dark:text-sky-300">95</span>%</p>
                         </div>
-                        <br>
-                        <button id="btn-reset" class="mt-6 border border-white/40 text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-white hover:text-black transition-all shadow-lg">{{ __('admin.prediction.close_result') }}</button>
+                        <div class="mt-6">
+                            <button id="btn-reset" class="border border-white/40 text-white px-10 py-3 rounded-full text-sm font-bold hover:bg-white hover:text-black transition-all shadow-lg">{{ __('admin.prediction.close_result') }}</button>
+                        </div>
                     </div>
                 </div>
+
                 <div id="loading-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-black/80 z-30 flex-col gap-4 backdrop-blur-sm">
                     <style>
                         @keyframes hatch {
@@ -172,97 +193,60 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Definisi Elemen Kamera
-    const video = document.getElementById('camera-stream');
-    const canvas = document.getElementById('snapshot-canvas');
-    const btnSnapshot = document.getElementById('btn-snapshot');
+document.addEventListener("DOMContentLoaded", function () {
+
+    // =========================================================================
+    // Referensi Elemen
+    // =========================================================================
+    const mjpegStream      = document.getElementById('mjpeg-stream');
+    const canvas           = document.getElementById('snapshot-canvas');
+    const btnSnapshot      = document.getElementById('btn-snapshot');
     const predictionResult = document.getElementById('prediction-result');
-    const snapshotImg = document.getElementById('snapshot-img');
-    const predText = document.getElementById('pred-text');
-    const predScore = document.getElementById('pred-score');
-    const btnReset = document.getElementById('btn-reset');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const trayTypeSelect = document.getElementById('tray_type');
+    const snapshotImg      = document.getElementById('snapshot-img');
+    const predText         = document.getElementById('pred-text');
+    const predScore        = document.getElementById('pred-score');
+    const btnReset         = document.getElementById('btn-reset');
+    const loadingOverlay   = document.getElementById('loading-overlay');
+    const trayTypeInput    = document.getElementById('tray_type');
+    const modal            = document.getElementById('imageViewerModal');
+    const modalImg         = document.getElementById('modalTargetImg');
+    const btnCloseModal    = document.getElementById('btn-close-modal');
+    const tableBody        = document.querySelector('#history-table tbody');
 
-    // Definisi Elemen Modal
-    const modal = document.getElementById('imageViewerModal');
-    const modalImg = document.getElementById('modalTargetImg');
-    const btnCloseModal = document.getElementById('btn-close-modal');
-    const tableBody = document.querySelector('#history-table tbody');
 
-    // 1. Aktivasi Kamera WebRTC
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function(stream) {
-            video.srcObject = stream;
-            video.muted = true;
-            video.play().catch(e => console.error("Autoplay failed:", e));
-        })
-        .catch(function(err) {
-            console.error("Akses kamera ditolak/gagal: ", err);
-        });
+    // =========================================================================
+    // Capture Snapshot langsung dari MJPEG <img> element
+    // =========================================================================
+    function captureSnapshot() {
+        if (!mjpegStream || mjpegStream.naturalWidth === 0) {
+            alert('Kamera belum aktif atau stream tidak dapat diakses. Pastikan FastAPI di port 8000 berjalan.');
+            return null;
+        }
+
+        const width  = mjpegStream.naturalWidth;
+        const height = mjpegStream.naturalHeight;
+
+        canvas.width  = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        try {
+            ctx.drawImage(mjpegStream, 0, 0, width, height);
+            return canvas.toDataURL('image/jpeg', 0.92);
+        } catch (e) {
+            console.error('Gagal mengambil snapshot dari image stream:', e);
+            alert('Gagal mengambil gambar dari stream. Harap periksa apakah CORS diizinkan di FastAPI.');
+            return null;
+        }
     }
 
-    // 2. Handler untuk klik tombol
-    if (tableBody) {
-        tableBody.addEventListener('click', function(e) {
-            const viewBtn = e.target.closest('.btn-view-image');
-            if (viewBtn) {
-                const src = viewBtn.getAttribute('data-image');
-                if (src && modal && modalImg) {
-                    modalImg.src = src;
-                    modal.classList.remove('hidden');
-                }
-                return;
-            }
-
-            const deleteBtn = e.target.closest('.btn-delete-history');
-            if (deleteBtn) {
-                const id = deleteBtn.getAttribute('data-id');
-                if (confirm('Apakah Anda yakin ingin menghapus riwayat ini? Foto fisik juga akan dihapus.')) {
-                    const baseUrl = window.location.origin;
-                    fetch(`${baseUrl}/admin/prediksi/destroy/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({ _method: 'DELETE' })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            const row = deleteBtn.closest('tr');
-                            row.classList.add('opacity-0', 'scale-95', 'transition-all', 'duration-300');
-                            setTimeout(() => { row.remove(); }, 300);
-                        } else {
-                            alert('Gagal menghapus data.');
-                        }
-                    })
-                    .catch(err => console.error(err));
-                }
-            }
-        });
-    }
-
-    if (btnCloseModal && modal) {
-        btnCloseModal.addEventListener('click', function() {
-            modal.classList.add('hidden');
-            if (modalImg) modalImg.src = '';
-        });
-    }
-
-    // 3. Ambil Foto & Analisis ML via AJAX
+    // =========================================================================
+    // Handler Tombol Snapshot + Kirim ke Laravel/FastAPI
+    // =========================================================================
     if (btnSnapshot) {
-        btnSnapshot.addEventListener('click', function() {
-            if (!video.videoWidth) return;
+        btnSnapshot.addEventListener('click', function () {
+            var dataURL = captureSnapshot();
+            if (!dataURL) return;
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const dataURL = canvas.toDataURL('image/jpeg');
             loadingOverlay.classList.remove('hidden');
             snapshotImg.src = dataURL;
 
@@ -272,25 +256,25 @@ document.addEventListener("DOMContentLoaded", function() {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ 
-                    image: dataURL,
-                    tray_type: trayTypeSelect.value
+                body: JSON.stringify({
+                    image:     dataURL,
+                    tray_type: trayTypeInput.value
                 })
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
                 loadingOverlay.classList.add('hidden');
                 if (data.success) {
                     predText.textContent = data.prediction;
-                    predText.className = data.prediction.toLowerCase() === 'fertil' 
-                        ? 'text-3xl font-black text-green-600 dark:text-green-400 font-headline' 
+                    predText.className   = data.prediction.toLowerCase() === 'fertil'
+                        ? 'text-3xl font-black text-green-600 dark:text-green-400 font-headline'
                         : 'text-3xl font-black text-red-600 dark:text-red-400 font-headline';
-                    
+
                     predScore.textContent = data.score;
                     predictionResult.classList.remove('hidden');
 
                     if (data.annotated_image) {
-                        snapshotImg.src = data.annotated_image; 
+                        snapshotImg.src = data.annotated_image;
                     }
 
                     if (data.history && tableBody) {
@@ -298,67 +282,114 @@ document.addEventListener("DOMContentLoaded", function() {
                             tableBody.innerHTML = '';
                         }
 
-                        const now = new Date();
-                        const formattedDate = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(/\./g, ':');
-                        
-                        const badge = data.prediction === 'Fertil' 
-                            ? `<span class="px-3 py-1 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/30 text-xs font-bold rounded-full">Fertil (${data.score}%)</span>`
-                            : `<span class="px-3 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-xs font-bold rounded-full">Infertil (${data.score}%)</span>`;
+                        var now = new Date();
+                        var formattedDate = now.toLocaleDateString('id-ID', {
+                            day: '2-digit', month: 'short', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        }).replace(/\./g, ':');
 
-                        const baseUrl = window.location.origin;
-                        const finalImg = data.annotated_image || (data.history.snapshot_path ? `${baseUrl}/storage/${data.history.snapshot_path}` : `${baseUrl}/ml_egg_prediction.png`);
-                        
-                        const isSuperAdmin = "{{ auth()->check() && auth()->user()->role == 'super_admin' ? true : false }}" === "1";
-                        let delBtnHtml = '';
-                        if (isSuperAdmin) {
-                            delBtnHtml = `
-                                <button type="button" data-id="${data.history.id}" class="btn-delete-history p-2 text-red-600 dark:text-rose-400 bg-red-50 dark:bg-rose-500/10 hover:bg-red-100 dark:hover:bg-rose-500/20 rounded-lg transition-colors border border-red-200 dark:border-rose-500/30 shadow-sm cursor-pointer flex items-center justify-center">
-                                    <span class="material-symbols-outlined text-[18px]">delete</span>
-                                </button>
-                            `;
-                        }
+                        var badge = data.prediction === 'Fertil'
+                            ? '<span class="px-3 py-1 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/30 text-xs font-bold rounded-full">Fertil (' + data.score + '%)</span>'
+                            : '<span class="px-3 py-1 bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/30 text-xs font-bold rounded-full">Infertil (' + data.score + '%)</span>';
 
-                        const newRow = `
-                            <tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors bg-sky-50/30 dark:bg-sky-900/20">
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm font-medium">${formattedDate}</td>
-                                <td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">${data.history.admin_name || 'Admin'}</td>
-                                <td class="px-6 py-4">${badge}</td>
-                                <td class="px-6 py-4"><span class="px-3 py-1 bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 text-xs font-bold rounded-full">${data.history.status}</span></td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        <button type="button" data-image="${finalImg}" class="btn-view-image p-2 text-blue-600 dark:text-sky-400 bg-blue-50 dark:bg-sky-500/10 hover:bg-blue-100 dark:hover:bg-sky-500/20 rounded-lg transition-all border border-blue-100 dark:border-sky-500/30 shadow-sm cursor-pointer flex items-center justify-center">
-                                            <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
-                                        <a href="${baseUrl}/admin/prediksi/export-data/${data.history.id}" class="p-2 text-green-600 dark:text-emerald-400 bg-green-50 dark:bg-emerald-500/10 hover:bg-green-100 dark:hover:bg-emerald-500/20 rounded-lg transition-colors border border-green-100 dark:border-emerald-500/30 shadow-sm flex items-center justify-center">
-                                            <span class="material-symbols-outlined text-[18px]">text_snippet</span>
-                                        </a>
-                                        <a href="${baseUrl}/admin/prediksi/export-pdf/${data.history.id}" class="p-2 text-red-600 dark:text-rose-400 bg-red-50 dark:bg-rose-500/10 hover:bg-red-100 dark:hover:bg-rose-500/20 rounded-lg transition-colors border border-red-100 dark:border-rose-500/30 flex items-center justify-center">
-                                            <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-                                        </a>
-                                        ${delBtnHtml}
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
+                        var baseUrl  = window.location.origin;
+                        var finalImg = data.annotated_image
+                            || (data.history.snapshot_path ? baseUrl + '/storage/' + data.history.snapshot_path : baseUrl + '/ml_egg_prediction.png');
+
+                        var isSuperAdmin = "{{ auth()->check() && auth()->user()->role == 'super_admin' ? '1' : '0' }}" === "1";
+                        var delBtnHtml   = isSuperAdmin
+                            ? '<button type="button" data-id="' + data.history.id + '" class="btn-delete-history p-2 text-red-600 dark:text-rose-400 bg-red-50 dark:bg-rose-500/10 hover:bg-red-100 dark:hover:bg-rose-500/20 rounded-lg transition-colors border border-red-200 dark:border-rose-500/30 shadow-sm cursor-pointer flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">delete</span></button>'
+                            : '';
+
+                        var newRow = '<tr class="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors bg-sky-50/30 dark:bg-sky-900/20">'
+                            + '<td class="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm font-medium">' + formattedDate + '</td>'
+                            + '<td class="px-6 py-4 font-bold text-slate-700 dark:text-slate-300">' + (data.history.admin_name || 'Admin') + '</td>'
+                            + '<td class="px-6 py-4">' + badge + '</td>'
+                            + '<td class="px-6 py-4"><span class="px-3 py-1 bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 text-xs font-bold rounded-full">' + data.history.status + '</span></td>'
+                            + '<td class="px-6 py-4 text-right"><div class="flex items-center justify-end gap-2">'
+                            + '<button type="button" data-image="' + finalImg + '" class="btn-view-image p-2 text-blue-600 dark:text-sky-400 bg-blue-50 dark:bg-sky-500/10 hover:bg-blue-100 dark:hover:bg-sky-500/20 rounded-lg transition-all border border-blue-100 dark:border-sky-500/30 shadow-sm cursor-pointer flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">visibility</span></button>'
+                            + '<a href="' + baseUrl + '/admin/prediksi/export-data/' + data.history.id + '" class="p-2 text-green-600 dark:text-emerald-400 bg-green-50 dark:bg-emerald-500/10 hover:bg-green-100 dark:hover:bg-emerald-500/20 rounded-lg transition-colors border border-green-100 dark:border-emerald-500/30 shadow-sm flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">text_snippet</span></a>'
+                            + '<a href="' + baseUrl + '/admin/prediksi/export-pdf/' + data.history.id + '" class="p-2 text-red-600 dark:text-rose-400 bg-red-50 dark:bg-rose-500/10 hover:bg-red-100 dark:hover:bg-rose-500/20 rounded-lg transition-colors border border-red-100 dark:border-rose-500/30 flex items-center justify-center"><span class="material-symbols-outlined text-[18px]">picture_as_pdf</span></a>'
+                            + delBtnHtml
+                            + '</div></td></tr>';
+
                         tableBody.insertAdjacentHTML('afterbegin', newRow);
                     }
                 } else {
-                    alert("Gagal menganalisis gambar.");
+                    alert(data.message || 'Gagal menganalisis gambar. Periksa koneksi ke FastAPI (port 8000).');
                 }
             })
-            .catch(err => {
+            .catch(function(err) {
                 loadingOverlay.classList.add('hidden');
-                console.error(err);
+                console.error('[Snapshot] Error:', err);
+                alert('Gagal mengirim gambar ke server Laravel. Periksa koneksi jaringan.');
             });
         });
     }
 
+    // =========================================================================
+    // Handler Tombol Reset
+    // =========================================================================
     if (btnReset) {
-        btnReset.addEventListener('click', function() {
+        btnReset.addEventListener('click', function () {
             predictionResult.classList.add('hidden');
             window.location.reload();
         });
     }
+
+    // =========================================================================
+    // Handler Tabel — View Image & Delete
+    // =========================================================================
+    if (tableBody) {
+        tableBody.addEventListener('click', function (e) {
+            var viewBtn = e.target.closest('.btn-view-image');
+            if (viewBtn) {
+                var src = viewBtn.getAttribute('data-image');
+                if (src && modal && modalImg) {
+                    modalImg.src = src;
+                    modal.classList.remove('hidden');
+                }
+                return;
+            }
+
+            var deleteBtn = e.target.closest('.btn-delete-history');
+            if (deleteBtn) {
+                var id = deleteBtn.getAttribute('data-id');
+                if (confirm('Apakah Anda yakin ingin menghapus riwayat ini? Foto fisik juga akan dihapus.')) {
+                    var baseUrl = window.location.origin;
+                    fetch(baseUrl + '/admin/prediksi/destroy/' + id, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ _method: 'DELETE' })
+                    })
+                    .then(function(response) {
+                        if (response.ok) {
+                            var row = deleteBtn.closest('tr');
+                            row.classList.add('opacity-0', 'scale-95', 'transition-all', 'duration-300');
+                            setTimeout(function() { row.remove(); }, 300);
+                        } else {
+                            alert('Gagal menghapus data.');
+                        }
+                    })
+                    .catch(function(err) { console.error('[Delete]', err); });
+                }
+            }
+        });
+    }
+
+    // =========================================================================
+    // Handler Modal Viewer
+    // =========================================================================
+    if (btnCloseModal && modal) {
+        btnCloseModal.addEventListener('click', function () {
+            modal.classList.add('hidden');
+            if (modalImg) modalImg.src = '';
+        });
+    }
+
 });
 </script>
 @endsection

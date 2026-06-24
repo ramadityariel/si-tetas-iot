@@ -23,6 +23,42 @@ class MonitoringController extends Controller
         // Paginated data for table
         $table_logs = \App\Models\SensorLog::latest()->paginate(10);
         
+        // Predict statuses using Random Forest Classifier in FastAPI
+        $payload = [];
+        foreach ($table_logs as $log) {
+            $payload[] = [
+                'temperature' => (float)$log->temperature,
+                'humidity' => (float)$log->humidity,
+            ];
+        }
+        
+        $predictions = [];
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(3)->post('http://127.0.0.1:8000/predict/status/batch', [
+                'data' => $payload
+            ]);
+            
+            if ($response->successful()) {
+                $predictions = $response->json();
+            }
+        } catch (\Exception $e) {
+            // FastAPI is offline, fallback will be used
+        }
+        
+        // Map predictions back to logs
+        foreach ($table_logs as $index => $log) {
+            $temp = $log->temperature;
+            $hum = $log->humidity;
+            if (($temp >= 36.5 && $temp <= 38.5) && ($hum >= 50 && $hum <= 70)) {
+                $fallback = 'Optimal';
+            } elseif (($temp >= 35.0 && $temp <= 39.0) && ($hum >= 40 && $hum <= 80)) {
+                $fallback = 'Warning';
+            } else {
+                $fallback = 'Critical';
+            }
+            $log->status_prediction = $predictions[$index]['status'] ?? $fallback;
+        }
+        
         return view('monitoring', compact('latest_sensor', 'chart_labels', 'temp_data', 'humid_data', 'table_logs', 'anomaly_logs'));
     }
 

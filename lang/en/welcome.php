@@ -63,4 +63,12 @@ return [
         'phone_title' => 'Phone & WhatsApp',
         'email_title' => 'Official Email',
     ],
+    'blog_page' => [
+        'title' => 'Article & Guide Center',
+        'desc' => 'Find expert tips, technical guides, and the latest news on smart hatching technology for your farm success.',
+        'search_ph' => 'Search guides...',
+        'read_more' => 'Read More',
+        'no_articles' => 'No articles yet',
+        'no_articles_desc' => 'Please add a new article via the admin dashboard.',
+    ],
 ];

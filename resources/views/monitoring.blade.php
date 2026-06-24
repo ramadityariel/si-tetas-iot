@@ -147,7 +147,8 @@
                     <tr>
                         <th class="px-6 py-4">{{ __('admin.monitoring.time') }}</th>
                         <th class="px-6 py-4">{{ __('admin.monitoring.sensor') }}</th>
-                        <th class="px-6 py-4">{{ __('admin.monitoring.parameter') }}</th>
+                        <th class="px-6 py-4">{{ __('admin.monitoring.temp') }}</th>
+                        <th class="px-6 py-4">{{ __('admin.monitoring.humid') }}</th>
                         <th class="px-6 py-4">{{ __('admin.monitoring.status') }}</th>
                         <th class="px-6 py-4 text-right">{{ __('admin.monitoring.action') }}</th>
                     </tr>
@@ -157,12 +158,15 @@
                     <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                         <td class="px-6 py-4 font-medium text-slate-600 dark:text-slate-400">{{ $log->created_at->format('H:i:s') }}</td>
                         <td class="px-6 py-4 font-semibold text-[#194A63] dark:text-white">DHT22 - Ruang Utama</td>
-                        <td class="px-6 py-4 dark:text-slate-300">{{ $log->temperature }}°C / {{ $log->humidity }}%</td>
+                        <td class="px-6 py-4 dark:text-slate-300">{{ $log->temperature }}°C</td>
+                        <td class="px-6 py-4 dark:text-slate-300">{{ $log->humidity }}%</td>
                         <td class="px-6 py-4">
-                            @if($log->temperature > 38)
+                            @if(isset($log->status_prediction) && strtolower($log->status_prediction) === 'optimal')
+                            <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 rounded-full text-xs font-bold">{{ __('admin.monitoring.optimal') }}</span>
+                            @elseif(isset($log->status_prediction) && strtolower($log->status_prediction) === 'warning')
                             <span class="px-3 py-1 bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/30 rounded-full text-xs font-bold">{{ __('admin.monitoring.warning') }}</span>
                             @else
-                            <span class="px-3 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30 rounded-full text-xs font-bold">{{ __('admin.monitoring.optimal') }}</span>
+                            <span class="px-3 py-1 bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 rounded-full text-xs font-bold">{{ __('admin.monitoring.critical') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
@@ -171,7 +175,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.monitoring.no_data') }}</td>
+                        <td colspan="6" class="px-6 py-4 text-center text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.monitoring.no_data') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -76,10 +76,12 @@ class PredictionController extends Controller
             if ($trayType === '1_butir') {
                 // Tembak endpoint satuan bawaan Python
                 $response = Http::attach('file', $binaryData, $imageName)
+                                ->timeout(60)
                                 ->post('http://127.0.0.1:8000/predict/single');
             } else {
                 // Tembak endpoint rak bawaan Python
                 $response = Http::attach('file', $binaryData, $imageName)
+                                ->timeout(120)
                                 ->post('http://127.0.0.1:8000/predict/tray');
             }
 
@@ -100,7 +102,13 @@ class PredictionController extends Controller
                 $scoreAgg = round($confidence * 100, 2);
                 
                 $rawClass = strtolower($mlResult['predicted_class'] ?? 'infertil');
-                $resultText = ($rawClass == 'fertil_hidup' || $rawClass == 'fertil_mati') ? 'Fertil' : 'Infertil';
+                
+                if ($scoreAgg < 70) {
+                    $resultText = 'Eror karena tidak terdeteksi telurnya';
+                    $rawClass = 'uncertain';
+                } else {
+                    $resultText = ($rawClass == 'fertil_hidup' || $rawClass == 'fertil_mati') ? 'Fertil' : 'Eror karena tidak terdeteksi telurnya';
+                }
                 
                 $eggsData[] = [
                     'class' => $rawClass,
@@ -123,7 +131,12 @@ class PredictionController extends Controller
                 $summary = $mlResult['summary'] ?? [];
                 $fertilCount = ($summary['fertil_hidup'] ?? 0) + ($summary['fertil_mati'] ?? 0);
                 $infertilCount = $summary['infertil'] ?? 0;
-                $resultText = ($fertilCount >= $infertilCount) ? 'Fertil' : 'Infertil';
+                
+                if ($fertilCount == 0 && $infertilCount == 0) {
+                    $resultText = 'Eror karena tidak terdeteksi telurnya';
+                } else {
+                    $resultText = ($fertilCount >= $infertilCount) ? 'Fertil' : 'Eror karena tidak terdeteksi telurnya';
+                }
             }
 
             // Simpan Ringkasan ke Database

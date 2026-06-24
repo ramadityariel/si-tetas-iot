@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html class="scroll-smooth transition-colors duration-300" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -12,8 +12,19 @@
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Dark Mode Init: apply before render to prevent flash -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('theme');
+            if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
 </head>
-<body class="bg-background font-body text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<body class="bg-background dark:bg-slate-950 font-body text-on-background dark:text-slate-100 selection:bg-primary-container selection:text-on-primary-container transition-colors duration-300">
 
     <!-- Top Navigation Bar -->
     <nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-[0_8px_24px_rgba(25,47,63,0.06)]">

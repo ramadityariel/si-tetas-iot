@@ -4,3 +4,7 @@ python-multipart
 tensorflow
 numpy
 pillow
+opencv-python
+joblib
+scikit-learn
+pydantic
