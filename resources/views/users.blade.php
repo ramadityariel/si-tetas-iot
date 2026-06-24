@@ -26,7 +26,7 @@
                 </div>
                 <div class="relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
                     <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider group-hover:text-[#194A63] dark:group-hover:text-sky-300 transition-colors">{{ __('admin.users.total_admin') }}</p>
-                    <p class="text-3xl font-black text-[#194A63] dark:text-white mt-0.5">{{ $users->count() }} <span class="text-base font-bold text-slate-400 dark:text-slate-500">{{ __('admin.users.personnel') }}</span></p>
+                    <p class="text-3xl font-black text-[#194A63] dark:text-white mt-0.5" x-data="{ count: 0, target: {{ $users->count() }} }" x-init="let duration = 1500; let start = null; let step = (timestamp) => { if (!start) start = timestamp; let progress = Math.min((timestamp - start) / duration, 1); count = Math.floor(progress * target); if (progress < 1) { window.requestAnimationFrame(step); } else { count = target; } }; window.requestAnimationFrame(step);"><span x-text="count">0</span> <span class="text-base font-bold text-slate-400 dark:text-slate-500">{{ __('admin.users.personnel') }}</span></p>
                 </div>
             </div>
             
@@ -38,7 +38,7 @@
                 </div>
                 <div class="relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
                     <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">{{ __('admin.users.active_today') }}</p>
-                    <p class="text-3xl font-black text-[#194A63] dark:text-white mt-0.5">{{ $users->count() }} <span class="text-base font-bold text-slate-400 dark:text-slate-500">{{ __('admin.users.personnel') }}</span></p>
+                    <p class="text-3xl font-black text-[#194A63] dark:text-white mt-0.5" x-data="{ count: 0, target: {{ $users->count() }} }" x-init="let duration = 1500; let start = null; let step = (timestamp) => { if (!start) start = timestamp; let progress = Math.min((timestamp - start) / duration, 1); count = Math.floor(progress * target); if (progress < 1) { window.requestAnimationFrame(step); } else { count = target; } }; window.requestAnimationFrame(step);"><span x-text="count">0</span> <span class="text-base font-bold text-slate-400 dark:text-slate-500">{{ __('admin.users.personnel') }}</span></p>
                 </div>
             </div>
         </div>

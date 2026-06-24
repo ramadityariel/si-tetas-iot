@@ -23,7 +23,7 @@
                 <div class="relative z-10 flex items-center justify-between">
                     <div class="transform group-hover:translate-x-1 transition-transform duration-300">
                         <p class="text-slate-500 dark:text-slate-400 text-sm font-bold font-body uppercase tracking-wider group-hover:text-sky-600 dark:group-hover:text-sky-300 transition-colors">{{ __('admin.blog.total_articles') }}</p>
-                        <h3 class="text-4xl font-extrabold text-[#194A63] dark:text-white mt-1 font-headline">{{ $articles->count() }}</h3>
+                        <h3 class="text-4xl font-extrabold text-[#194A63] dark:text-white mt-1 font-headline" x-data="{ count: 0, target: {{ $articles->count() }} }" x-init="let duration = 1500; let start = null; let step = (timestamp) => { if (!start) start = timestamp; let progress = Math.min((timestamp - start) / duration, 1); count = Math.floor(progress * target); if (progress < 1) { window.requestAnimationFrame(step); } else { count = target; } }; window.requestAnimationFrame(step);" x-text="count">0</h3>
                     </div>
                     <div class="w-14 h-14 rounded-2xl bg-sky-100 dark:bg-sky-500/20 flex items-center justify-center border border-sky-200 dark:border-sky-500/30 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300">
                         <span class="material-symbols-outlined text-[#35627C] dark:text-sky-400 text-3xl">description</span>
@@ -36,7 +36,7 @@
                 <div class="relative z-10 flex items-center justify-between">
                     <div class="transform group-hover:translate-x-1 transition-transform duration-300">
                         <p class="text-slate-500 dark:text-slate-400 text-sm font-bold font-body uppercase tracking-wider group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">{{ __('admin.blog.published') }}</p>
-                        <h3 class="text-4xl font-extrabold text-[#194A63] dark:text-white mt-1 font-headline">{{ $articles->where('status', 'published')->count() }}</h3>
+                        <h3 class="text-4xl font-extrabold text-[#194A63] dark:text-white mt-1 font-headline" x-data="{ count: 0, target: {{ $articles->where('status', 'published')->count() }} }" x-init="let duration = 1500; let start = null; let step = (timestamp) => { if (!start) start = timestamp; let progress = Math.min((timestamp - start) / duration, 1); count = Math.floor(progress * target); if (progress < 1) { window.requestAnimationFrame(step); } else { count = target; } }; window.requestAnimationFrame(step);" x-text="count">0</h3>
                     </div>
                     <div class="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center border border-emerald-200 dark:border-emerald-500/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                         <span class="material-symbols-outlined text-emerald-700 dark:text-emerald-400 text-3xl">check_circle</span>
@@ -49,7 +49,7 @@
                 <div class="relative z-10 flex items-center justify-between">
                     <div class="transform group-hover:translate-x-1 transition-transform duration-300">
                         <p class="text-slate-500 dark:text-slate-400 text-sm font-bold font-body uppercase tracking-wider group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors">{{ __('admin.blog.draft') }}</p>
-                        <h3 class="text-4xl font-extrabold text-[#194A63] dark:text-white mt-1 font-headline">{{ $articles->where('status', 'draft')->count() }}</h3>
+                        <h3 class="text-4xl font-extrabold text-[#194A63] dark:text-white mt-1 font-headline" x-data="{ count: 0, target: {{ $articles->where('status', 'draft')->count() }} }" x-init="let duration = 1500; let start = null; let step = (timestamp) => { if (!start) start = timestamp; let progress = Math.min((timestamp - start) / duration, 1); count = Math.floor(progress * target); if (progress < 1) { window.requestAnimationFrame(step); } else { count = target; } }; window.requestAnimationFrame(step);" x-text="count">0</h3>
                     </div>
                     <div class="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center border border-orange-200 dark:border-orange-500/30 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300">
                         <span class="material-symbols-outlined text-orange-700 dark:text-orange-400 text-3xl">edit_note</span>
