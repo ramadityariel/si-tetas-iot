@@ -97,6 +97,7 @@ return [
         'anomaly_indicator' => 'Anomaly Indicator',
         'description' => 'Description',
         'anomaly_table_title' => 'Anomaly Data Sensor Log',
+        'anomaly_detected' => 'Anomaly Detected',
     ],
     'prediction' => [
         'title' => 'Visualization & Prediction Analysis',

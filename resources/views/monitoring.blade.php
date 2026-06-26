@@ -204,7 +204,7 @@
                         <td class="px-6 py-4 font-semibold text-[#194A63] dark:text-white">{{ $anomaly->temperature }}</td>
                         <td class="px-6 py-4 dark:text-slate-300">{{ $anomaly->humidity }}</td>
                         <td class="px-6 py-4">
-                            <span class="px-3 py-1 bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 rounded-full text-xs font-bold">{{ $anomaly->anomaly_type }}</span>
+                            <span class="px-3 py-1 bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 rounded-full text-xs font-bold">{{ $anomaly->anomaly_type === 'Anomaly Detected' ? __('admin.monitoring.anomaly_detected') : $anomaly->anomaly_type }}</span>
                         </td>
                         <td class="px-6 py-4 dark:text-slate-300">{{ $anomaly->description }}</td>
                     </tr>
@@ -348,7 +348,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Suhu (°C)',
+                    label: '{{ __('admin.dashboard.log_temp') }} (°C)',
                     data: {!! json_encode($temp_data) !!},
                     borderColor: tempChartColor,
                     backgroundColor: tempGradient,
@@ -384,7 +384,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Kelembapan (%)',
+                    label: '{{ __('admin.monitoring.humidity') }} (%)',
                     data: {!! json_encode($humid_data) !!},
                     borderColor: humidChartColor,
                     backgroundColor: humidGradient,

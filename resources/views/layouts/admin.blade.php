@@ -42,7 +42,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800 dark:text-white bg-slate-50 dark:bg-slate-950 antialiased font-body transition-colors duration-500">
+<body x-data="{ sidebarOpen: false }" class="text-slate-800 dark:text-white bg-slate-50 dark:bg-slate-950 antialiased font-body transition-colors duration-500 overflow-x-hidden">
 
     <!-- Ambient Background Image -->
     <div class="fixed inset-0 z-0 pointer-events-none opacity-30 dark:opacity-100 transition-opacity duration-500">
@@ -52,16 +52,29 @@
     <!-- Ambient Light Blob -->
     <div class="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-sky-400/20 dark:bg-sky-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
+    <!-- Sidebar Mobile Overlay -->
+    <div x-show="sidebarOpen" 
+         @click="sidebarOpen = false"
+         x-transition.opacity
+         class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+         style="display: none;">
+    </div>
+
     <!-- SideNavBar -->
-    <aside class="h-screen w-64 fixed left-0 top-0 bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border-r border-slate-200 dark:border-white/10 flex flex-col p-4 gap-2 z-50 transition-colors duration-500 shadow-xl">
-        <div class="mb-8 px-2 flex items-center gap-3">
-            <div class="w-10 h-10 bg-[#35627C] dark:bg-sky-500/20 border dark:border-sky-400/30 rounded-xl flex items-center justify-center text-white dark:text-sky-400 shadow-lg">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">egg</span>
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="h-screen w-64 fixed left-0 top-0 bg-white/80 dark:bg-slate-900/40 backdrop-blur-xl border-r border-slate-200 dark:border-white/10 flex flex-col p-4 gap-2 z-50 transition-transform duration-300 shadow-xl lg:translate-x-0">
+        <div class="mb-8 px-2 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-[#35627C] dark:bg-sky-500/20 border dark:border-sky-400/30 rounded-xl flex items-center justify-center text-white dark:text-sky-400 shadow-lg">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">egg</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-[#194A63] dark:text-white leading-none">{{ __('admin.sidebar.title') }}</h1>
+                    <p class="font-['Plus_Jakarta_Sans'] font-medium text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('admin.sidebar.subtitle') }}</p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-xl font-bold text-[#194A63] dark:text-white leading-none">{{ __('admin.sidebar.title') }}</h1>
-                <p class="font-['Plus_Jakarta_Sans'] font-medium text-xs text-slate-500 dark:text-slate-400 mt-1">{{ __('admin.sidebar.subtitle') }}</p>
-            </div>
+            <button @click="sidebarOpen = false" class="lg:hidden text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white p-1 rounded-md">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
         
         <nav class="flex-1 space-y-1">
@@ -104,11 +117,40 @@
         </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="ml-64 min-h-screen flex flex-col relative z-10">
+    <!-- Mobile Top Navbar -->
+    <div class="lg:hidden fixed top-0 left-0 w-full z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 px-4 h-16 flex items-center justify-between transition-colors duration-500 shadow-sm">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button @click="sidebarOpen = true" class="text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 p-1.5 sm:p-2 rounded-lg transition-colors flex items-center justify-center">
+                <span class="material-symbols-outlined text-[24px]">menu</span>
+            </button>
+            <h1 class="font-bold text-[#194A63] dark:text-white text-base sm:text-lg truncate max-w-[100px] sm:max-w-none">{{ __('admin.sidebar.title') }}</h1>
+        </div>
         
-        <!-- TopNavBar -->
-        <header class="sticky top-0 z-40 bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 flex justify-end items-center px-8 py-4 transition-all duration-300">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Mobile Language Toggle -->
+            <a href="{{ route('lang.switch', app()->getLocale() == 'id' ? 'en' : 'id') }}" class="relative flex items-center w-12 h-7 sm:w-16 sm:h-8 rounded-full bg-slate-200 dark:bg-slate-700 shadow-inner border border-slate-300 dark:border-slate-600 transition-colors overflow-hidden font-bold text-[9px] sm:text-[10px]" title="Toggle Language">
+                <div class="absolute w-1/2 h-full bg-white dark:bg-slate-600 rounded-full shadow transition-transform duration-300 {{ app()->getLocale() == 'id' ? 'translate-x-full' : 'translate-x-0' }}"></div>
+                <span class="w-1/2 text-center z-10 {{ app()->getLocale() == 'en' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400' }}">EN</span>
+                <span class="w-1/2 text-center z-10 {{ app()->getLocale() == 'id' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400' }}">ID</span>
+            </a>
+            
+            <!-- Mobile Theme Toggle -->
+            <button class="mobile-theme-toggle w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-sky-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" title="Toggle Theme">
+                <span class="mobile-theme-icon material-symbols-outlined text-[16px] sm:text-[18px]">dark_mode</span>
+            </button>
+
+            <!-- User Profile -->
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden ring-2 ring-white dark:ring-slate-800 shadow-md ml-1 sm:ml-2 shrink-0">
+                <img alt="Admin Profile" class="w-full h-full object-cover" src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=35627C&color=fff"/>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="pl-0 lg:pl-64 pt-16 lg:pt-0 min-h-screen flex flex-col relative z-10 transition-all duration-300">
+        
+        <!-- TopNavBar Desktop -->
+        <header class="hidden lg:flex sticky top-0 z-40 bg-white/50 dark:bg-slate-900/40 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 justify-end items-center px-8 py-4 transition-all duration-300">
             <div class="flex items-center gap-6">
                 
                 <!-- Action Controls -->
@@ -161,25 +203,28 @@
     <!-- Theme Control Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const themeToggleBtn = document.getElementById('admin-theme-toggle');
-            const themeIcon = document.getElementById('admin-theme-icon');
+            const themeToggleBtns = document.querySelectorAll('#admin-theme-toggle, .mobile-theme-toggle');
+            const themeIcons = document.querySelectorAll('#admin-theme-icon, .mobile-theme-icon');
             const htmlElement = document.documentElement;
 
             function updateIcons() {
-                if (htmlElement.classList.contains('dark')) {
-                    themeIcon.textContent = 'light_mode';
-                    themeIcon.classList.add('text-amber-400');
-                    themeIcon.classList.remove('text-slate-500');
-                } else {
-                    themeIcon.textContent = 'dark_mode';
-                    themeIcon.classList.remove('text-amber-400');
-                    themeIcon.classList.add('text-slate-500');
-                }
+                const isDark = htmlElement.classList.contains('dark');
+                themeIcons.forEach(icon => {
+                    if (isDark) {
+                        icon.textContent = 'light_mode';
+                        icon.classList.add('text-amber-400');
+                        icon.classList.remove('text-slate-500');
+                    } else {
+                        icon.textContent = 'dark_mode';
+                        icon.classList.remove('text-amber-400');
+                        icon.classList.add('text-slate-500');
+                    }
+                });
             }
             updateIcons();
 
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', function() {
+            themeToggleBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
                     htmlElement.classList.toggle('dark');
                     updateIcons();
                     if (htmlElement.classList.contains('dark')) {
@@ -188,7 +233,7 @@
                         localStorage.setItem('theme', 'light');
                     }
                 });
-            }
+            });
         });
     </script>
 

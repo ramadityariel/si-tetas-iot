@@ -83,7 +83,7 @@
 <!-- =========================================================================
      NAVIGATION BAR (TRANSPARENT TO SOLID BLUE ON SCROLL)
      ========================================================================= -->
-<nav id="landing-navbar" class="fixed top-0 left-0 w-full z-50 bg-transparent transition-all duration-300">
+<nav id="landing-navbar" x-data="{ mobileMenuOpen: false }" class="fixed top-0 left-0 w-full z-50 bg-transparent transition-all duration-300">
     <div class="px-6 py-4 lg:px-16 flex justify-between items-center max-w-[1440px] mx-auto w-full">
         <!-- Brand Identity -->
         <div class="text-3xl font-black text-slate-900 dark:text-white transition-transform duration-300 hover:scale-105" style="font-family: 'Brush Script MT', 'Dancing Script', cursive;">
@@ -91,18 +91,18 @@
         </div>
         
         <!-- Center Nav Links -->
-        <div class="hidden md:flex items-center gap-10 text-slate-800 dark:text-white/90 text-sm font-semibold tracking-wide">
+        <div class="hidden lg:flex items-center gap-10 text-slate-800 dark:text-white/90 text-sm font-semibold tracking-wide">
             <a href="{{ url('/#beranda') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.home') !!}</a>
-            <a href="{{ route('blog.index') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.blog') !!}</a>
+            <a href="{{ url('/#artikel-terbaru') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.blog') !!}</a>
             <a href="{{ url('/#demo-operasional') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.demo') !!}</a>
             <a href="{{ url('/#tentang-kami') }}" class="hover:text-sky-600 dark:hover:text-white transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sky-400 hover:after:w-full after:transition-all">{!! __('welcome.nav.about') !!}</a>
         </div>
         
-        <!-- Call to Action Login Button & Toggles -->
-        <div class="flex items-center gap-4">
+        <!-- Call to Action Login Button & Toggles (Desktop Only) -->
+        <div class="hidden lg:flex items-center gap-4">
             <!-- Theme Toggle Icon -->
-            <button id="theme-toggle" class="w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-sky-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" title="Toggle Theme">
-                <span id="theme-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+            <button id="theme-toggle" class="theme-toggle w-8 h-8 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-sky-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" title="Toggle Theme">
+                <span id="theme-icon" class="theme-icon material-symbols-outlined text-[18px]">dark_mode</span>
             </button>
             
             <!-- Language Toggle Capsule -->
@@ -115,6 +115,59 @@
             <a href="{{ route('login') }}" onclick="confirmLogin(event, this.href)" class="border border-slate-600 dark:border-white/40 text-slate-800 dark:text-white px-6 py-2 rounded-sm text-sm font-bold tracking-wider hover:bg-slate-800 hover:text-white dark:hover:bg-white dark:hover:text-black dark:hover:border-white transition-all">
                 {!! __('welcome.nav.login') !!}
             </a>
+        </div>
+
+        <!-- Hamburger Menu (Mobile Only) -->
+        <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-slate-800 dark:text-white p-2 rounded-md hover:bg-slate-200 dark:hover:bg-white/10 transition-colors focus:outline-none flex items-center justify-center">
+            <span class="material-symbols-outlined text-[28px]" x-text="mobileMenuOpen ? 'close' : 'menu'">menu</span>
+        </button>
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div x-show="mobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="lg:hidden absolute top-full left-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-xl"
+         style="display: none;">
+        <div class="px-6 py-8 flex flex-col gap-6">
+            <!-- Mobile Links -->
+            <div class="flex flex-col gap-5 text-slate-800 dark:text-white font-semibold text-base">
+                <a @click="mobileMenuOpen = false" href="{{ url('/#beranda') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">home</span> {!! __('welcome.nav.home') !!}</a>
+                <a @click="mobileMenuOpen = false" href="{{ url('/#artikel-terbaru') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">article</span> {!! __('welcome.nav.blog') !!}</a>
+                <a @click="mobileMenuOpen = false" href="{{ url('/#demo-operasional') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">play_circle</span> {!! __('welcome.nav.demo') !!}</a>
+                <a @click="mobileMenuOpen = false" href="{{ url('/#tentang-kami') }}" class="hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">groups</span> {!! __('welcome.nav.about') !!}</a>
+            </div>
+            
+            <div class="h-[1px] w-full bg-slate-200 dark:bg-white/10"></div>
+            
+            <!-- Mobile Toggles & Actions -->
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Theme</span>
+                    <!-- Mobile Theme Toggle -->
+                    <button class="theme-toggle w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-sky-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="Toggle Theme">
+                        <span class="theme-icon material-symbols-outlined text-[20px]">dark_mode</span>
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Language</span>
+                    <!-- Mobile Language Toggle Capsule -->
+                    <a href="{{ route('lang.switch', app()->getLocale() == 'id' ? 'en' : 'id') }}" class="relative flex items-center w-[72px] h-9 rounded-full bg-slate-200 dark:bg-slate-700 shadow-inner border border-slate-300 dark:border-slate-600 transition-colors overflow-hidden font-bold text-[11px]" title="Toggle Language">
+                        <div class="absolute w-1/2 h-full bg-white dark:bg-slate-600 rounded-full shadow transition-transform duration-300 {{ app()->getLocale() == 'id' ? 'translate-x-full' : 'translate-x-0' }}"></div>
+                        <span class="w-1/2 text-center z-10 {{ app()->getLocale() == 'en' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400' }}">EN</span>
+                        <span class="w-1/2 text-center z-10 {{ app()->getLocale() == 'id' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400' }}">ID</span>
+                    </a>
+                </div>
+                
+                <a @click="mobileMenuOpen = false" href="{{ route('login') }}" onclick="confirmLogin(event, this.href)" class="w-full text-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3.5 rounded-xl text-sm font-bold tracking-wider hover:bg-[#35627C] dark:hover:bg-sky-100 transition-all shadow-md mt-2">
+                    {!! __('welcome.nav.login') !!}
+                </a>
+            </div>
         </div>
     </div>
 </nav>
@@ -143,11 +196,11 @@
                 {!! __('welcome.hero.desc') !!}
             </p>
             
-            <div class="flex flex-wrap gap-5">
-                <a href="{{ route('login') }}" onclick="confirmLogin(event, this.href)" class="bg-[#35627C] hover:bg-[#194A63] text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-all shadow-lg hover:shadow-[#35627C]/20 hover:-translate-y-0.5 uppercase">
+            <div class="flex flex-col lg:flex-row gap-4 lg:gap-5 w-full sm:w-auto">
+                <a href="{{ route('login') }}" onclick="confirmLogin(event, this.href)" class="text-center bg-[#35627C] hover:bg-[#194A63] text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-all shadow-lg hover:shadow-[#35627C]/20 hover:-translate-y-0.5 uppercase">
                     {!! __('welcome.hero.btn_start') !!}
                 </a>
-                <a href="#demo-operasional" class="border border-slate-600 dark:border-white/80 hover:bg-slate-800 hover:text-white dark:hover:bg-white dark:hover:text-black text-slate-800 dark:text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-colors uppercase">
+                <a href="#demo-operasional" class="text-center border border-slate-600 dark:border-white/80 hover:bg-slate-800 hover:text-white dark:hover:bg-white dark:hover:text-black text-slate-800 dark:text-white px-10 py-4 rounded-sm text-sm font-bold tracking-widest transition-colors uppercase">
                     {!! __('welcome.hero.btn_demo') !!}
                 </a>
             </div>
@@ -508,20 +561,23 @@
         const navbar = document.getElementById('landing-navbar');
         
         // Theme Toggle Logic
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
+        const themeToggleBtns = document.querySelectorAll('.theme-toggle, #theme-toggle');
+        const themeIcons = document.querySelectorAll('.theme-icon, #theme-icon');
         const htmlElement = document.documentElement;
         
         function updateThemeIcon() {
-            if (htmlElement.classList.contains('dark')) {
-                themeIcon.textContent = 'light_mode';
-                themeIcon.classList.add('text-amber-400');
-                themeIcon.classList.remove('text-slate-500');
-            } else {
-                themeIcon.textContent = 'dark_mode';
-                themeIcon.classList.remove('text-amber-400');
-                themeIcon.classList.add('text-slate-500');
-            }
+            const isDark = htmlElement.classList.contains('dark');
+            themeIcons.forEach(icon => {
+                if (isDark) {
+                    icon.textContent = 'light_mode';
+                    icon.classList.add('text-amber-400');
+                    icon.classList.remove('text-slate-500');
+                } else {
+                    icon.textContent = 'dark_mode';
+                    icon.classList.remove('text-amber-400');
+                    icon.classList.add('text-slate-500');
+                }
+            });
         }
         
         // Cek LocalStorage
@@ -532,14 +588,16 @@
         }
         updateThemeIcon();
 
-        themeToggleBtn.addEventListener('click', function() {
-            htmlElement.classList.toggle('dark');
-            updateThemeIcon();
-            if (htmlElement.classList.contains('dark')) {
-                localStorage.setItem('theme', 'dark');
-            } else {
-                localStorage.setItem('theme', 'light');
-            }
+        themeToggleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                htmlElement.classList.toggle('dark');
+                updateThemeIcon();
+                if (htmlElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
         });
 
         // Pengendali Animasi Solid Navbar on Scroll

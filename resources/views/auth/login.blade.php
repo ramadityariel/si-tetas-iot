@@ -196,7 +196,7 @@
                     </div>
 
                     <div class="flex items-center justify-end pt-2">
-                        <a href="#" class="text-[13px] font-bold text-sky-600 dark:text-sky-400 hover:underline decoration-sky-400/30">{{ __('admin.login.forgot') }}</a>
+                        <a href="{{ app()->getLocale() == 'id' ? 'https://wa.me/6281586219748?text=Halo%20Admin%20Si-Tetas%2C%20saya%20lupa%20password%20akun%20saya.%20Mohon%20bantuannya%20untuk%20melakukan%20reset%20password.' : 'https://wa.me/6281586219748?text=Hello%20Si-Tetas%20Admin%2C%20I%20forgot%20my%20account%20password.%20Please%20help%20me%20reset%20it.' }}" target="_blank" rel="noopener noreferrer" class="text-[13px] font-bold text-sky-600 dark:text-sky-400 hover:underline decoration-sky-400/30">{{ __('admin.login.forgot') }}</a>
                     </div>
 
                     <button type="submit" class="w-full py-3.5 bg-[#FF8F00] hover:bg-[#E65100] text-white text-[15px] font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mt-4 active:scale-[0.99]">

@@ -15,12 +15,14 @@ Route::get('/', function () {
     return view('welcome', compact('articles'));
 })->name('home');
 
-Route::get('/lang/{locale}', function ($locale) {
-    if (in_array($locale, ['id', 'en'])) {
-        session(['locale' => $locale]);
-    }
-    return redirect()->back();
-})->name('lang.switch');
+Route::middleware('web')->group(function () {
+    Route::get('/lang/{locale}', function ($locale) {
+        if (in_array($locale, ['id', 'en'])) {
+            session(['locale' => $locale]);
+        }
+        return redirect()->back();
+    })->name('lang.switch');
+});
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -45,7 +47,7 @@ Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'showPu
 use App\Http\Controllers\MonitoringController;
 
 // Admin Routes protected by auth middleware
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\SetLocale::class])->prefix('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');

@@ -97,6 +97,7 @@ return [
         'anomaly_indicator' => 'Indikator Anomali',
         'description' => 'Keterangan',
         'anomaly_table_title' => 'Log Data Anomali Sensor',
+        'anomaly_detected' => 'Anomali Terdeteksi',
     ],
     'prediction' => [
         'title' => 'Visualisasi & Analisis Prediksi',
