@@ -33,14 +33,31 @@
                    → Aktif otomatis jika FastAPI tidak tersedia.
                    → Memerlukan HTTPS atau localhost.
                  ============================================================ --}}
-            <div class="relative bg-slate-900 flex justify-center items-center min-h-[400px]" id="camera-wrapper">
+            <div class="relative bg-slate-900 flex justify-center items-center min-h-[400px] rounded-2xl overflow-hidden border border-slate-800" id="camera-wrapper">
+
+                {{-- Placeholder jika kamera terputus --}}
+                <div id="camera-offline-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-slate-400 z-10 p-6 text-center hidden">
+                    <span class="material-symbols-outlined text-6xl text-slate-600 animate-pulse mb-3">videocam_off</span>
+                    <h5 class="font-bold text-lg text-white">Kamera Terputus</h5>
+                    <p class="text-xs text-slate-500 mt-2 max-w-xs">
+                        Pastikan ESP32-CAM menyala dan server FastAPI di port 8000 berjalan dengan benar.
+                    </p>
+                    <button type="button" id="btn-reload-stream" class="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 border border-slate-700 cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">refresh</span> Hubungkan Ulang
+                    </button>
+                </div>
+
+                {{-- Loading Spinner saat pertama kali memuat --}}
+                <div id="camera-loading-spinner" class="absolute inset-0 flex items-center justify-center bg-slate-950 z-20">
+                    <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#35627C]"></div>
+                </div>
 
                 {{-- MJPEG Stream dari FastAPI --}}
                 <img id="mjpeg-stream"
                      src="http://127.0.0.1:8000/video_feed"
                      crossorigin="anonymous"
                      alt="Live Camera Stream"
-                     class="w-full max-h-[500px] object-contain"
+                     class="w-full max-h-[500px] object-contain opacity-0 transition-opacity duration-300 z-0"
                 />
 
 
@@ -212,6 +229,45 @@ document.addEventListener("DOMContentLoaded", function () {
     const modalImg         = document.getElementById('modalTargetImg');
     const btnCloseModal    = document.getElementById('btn-close-modal');
     const tableBody        = document.querySelector('#history-table tbody');
+
+    const cameraOfflinePlaceholder = document.getElementById('camera-offline-placeholder');
+    const cameraLoadingSpinner     = document.getElementById('camera-loading-spinner');
+    const btnReloadStream          = document.getElementById('btn-reload-stream');
+
+    if (mjpegStream) {
+        // Jika gambar berhasil dimuat
+        mjpegStream.addEventListener('load', function() {
+            if (cameraLoadingSpinner) cameraLoadingSpinner.classList.add('hidden');
+            if (cameraOfflinePlaceholder) cameraOfflinePlaceholder.classList.add('hidden');
+            mjpegStream.classList.remove('opacity-0');
+            mjpegStream.classList.add('z-30');
+        });
+
+        // Jika gambar gagal dimuat (error 404, Refused, CORS, dll)
+        mjpegStream.addEventListener('error', function() {
+            if (cameraLoadingSpinner) cameraLoadingSpinner.classList.add('hidden');
+            mjpegStream.classList.add('opacity-0');
+            mjpegStream.classList.remove('z-30');
+            if (cameraOfflinePlaceholder) cameraOfflinePlaceholder.classList.remove('hidden');
+        });
+
+        // Jika browser menolak me-load mjpegStream secara instan karena status cache
+        if (mjpegStream.complete && mjpegStream.naturalWidth === 0) {
+            mjpegStream.dispatchEvent(new Event('error'));
+        }
+    }
+
+    if (btnReloadStream) {
+        btnReloadStream.addEventListener('click', function() {
+            if (cameraLoadingSpinner) cameraLoadingSpinner.classList.remove('hidden');
+            if (cameraOfflinePlaceholder) cameraOfflinePlaceholder.classList.add('hidden');
+            mjpegStream.classList.add('opacity-0');
+            mjpegStream.classList.remove('z-30');
+            
+            // Bypass browser cache dengan query param timestamp
+            mjpegStream.src = "http://127.0.0.1:8000/video_feed?t=" + new Date().getTime();
+        });
+    }
 
 
     // =========================================================================

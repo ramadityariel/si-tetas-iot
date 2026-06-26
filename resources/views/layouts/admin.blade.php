@@ -5,13 +5,24 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>@yield('title', 'Si-Tetas Admin Dashboard')</title>
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    
+    <!-- Preconnect untuk mempercepat koneksi ke Google Fonts & CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/>
+
+    <!-- Google Fonts: swap agar teks langsung tampil tanpa menunggu font -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
+    </noscript>
+
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- SweetAlert2 via CDN — defer agar tidak memblokir render -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
 
     <script>
         // Set theme immediately to avoid flash
@@ -44,12 +55,18 @@
 </head>
 <body x-data="{ sidebarOpen: false }" class="text-slate-800 dark:text-white bg-slate-50 dark:bg-slate-950 antialiased font-body transition-colors duration-500 overflow-x-hidden">
 
-    <!-- Ambient Background Image -->
-    <div class="fixed inset-0 z-0 pointer-events-none opacity-30 dark:opacity-100 transition-opacity duration-500">
-        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" alt="Background" class="w-full h-full object-cover" />
-    </div>
-    <div class="fixed inset-0 bg-white/80 dark:bg-black/70 z-0 pointer-events-none transition-colors duration-500"></div>
-    <!-- Ambient Light Blob -->
+    <!-- Page Loading Progress Bar -->
+    <div id="page-progress" style="position:fixed;top:0;left:0;width:0%;height:3px;background:linear-gradient(90deg,#35627C,#38bdf8);z-index:9999;transition:width 0.3s ease;pointer-events:none;"></div>
+
+    <!-- Ambient Background (pure CSS — no external image request) -->
+    <div class="fixed inset-0 z-0 pointer-events-none" style="
+        background: radial-gradient(ellipse at 80% 20%, rgba(56,189,248,0.12) 0%, transparent 50%),
+                    radial-gradient(ellipse at 20% 80%, rgba(53,98,124,0.10) 0%, transparent 50%),
+                    radial-gradient(ellipse at 50% 50%, rgba(148,163,184,0.05) 0%, transparent 60%);
+    "></div>
+    <div class="fixed inset-0 z-0 pointer-events-none dark:hidden" style="background:rgba(255,255,255,0.3);"></div>
+    <div class="fixed inset-0 z-0 pointer-events-none hidden dark:block" style="background:rgba(0,0,0,0.4);"></div>
+    <!-- Ambient Light Blob (CSS only) -->
     <div class="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-sky-400/20 dark:bg-sky-500/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
     <!-- Sidebar Mobile Overlay -->
@@ -86,6 +103,24 @@
             <a class="{{ request()->routeIs('monitoring') ? 'bg-[#35627C] text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-xl flex items-center gap-3 px-4 py-3 transition-all hover:translate-x-1" href="{{ route('monitoring') }}">
                 <span class="material-symbols-outlined" data-icon="sensors">sensors</span>
                 <span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">{{ __('admin.sidebar.monitoring') }}</span>
+            </a>
+            
+            <!-- Submenu for Logs & AI Monitoring -->
+            <div class="space-y-0.5 ml-6">
+                <a class="{{ request()->routeIs('sensor-logs') ? 'bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-lg flex items-center gap-2.5 px-3 py-2 transition-all hover:translate-x-1" href="{{ route('sensor-logs') }}">
+                    <span class="material-symbols-outlined" style="font-size:16px" data-icon="description">description</span>
+                    <span class="font-['Plus_Jakarta_Sans'] font-medium text-xs">{{ __('admin.sidebar.sensor_logs') }}</span>
+                </a>
+                <a class="{{ request()->routeIs('anomaly-logs') ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-lg flex items-center gap-2.5 px-3 py-2 transition-all hover:translate-x-1" href="{{ route('anomaly-logs') }}">
+                    <span class="material-symbols-outlined" style="font-size:16px" data-icon="warning">warning</span>
+                    <span class="font-['Plus_Jakarta_Sans'] font-medium text-xs">{{ __('admin.sidebar.anomaly_logs') }}</span>
+                </a>
+
+            </div>
+            
+            <a class="{{ request()->routeIs('settings.threshold') ? 'bg-[#35627C] text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-xl flex items-center gap-3 px-4 py-3 transition-all hover:translate-x-1" href="{{ route('settings.threshold') }}">
+                <span class="material-symbols-outlined" data-icon="tune">tune</span>
+                <span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">Threshold Settings</span>
             </a>
             
             <a class="{{ request()->routeIs('prediksi') ? 'bg-[#35627C] text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-xl flex items-center gap-3 px-4 py-3 transition-all hover:translate-x-1" href="{{ route('prediksi') }}">
@@ -174,8 +209,12 @@
                         <p class="font-['Manrope'] text-sm font-bold text-[#194A63] dark:text-white">{{ __('admin.topbar.welcome') }}, {{ auth()->user()->name ?? 'Admin' }}</p>
                         <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{{ __('admin.topbar.last_login') }}: {{ auth()->user()->last_login_at ? auth()->user()->last_login_at->translatedFormat('d M Y, H:i') : now()->translatedFormat('d M Y, H:i') }}</p>
                     </div>
-                    <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden ring-2 ring-white dark:ring-slate-800 shadow-md">
-                        <img alt="Admin Profile" class="w-full h-full object-cover" src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=35627C&color=fff"/>
+                    @php
+                        $avatarName = auth()->user()->name ?? 'Admin';
+                        $initials = collect(explode(' ', $avatarName))->map(fn($w) => strtoupper($w[0] ?? ''))->take(2)->join('');
+                    @endphp
+                    <div class="w-10 h-10 rounded-full bg-[#35627C] overflow-hidden ring-2 ring-white dark:ring-slate-800 shadow-md flex items-center justify-center" title="{{ $avatarName }}">
+                        <span class="text-white font-bold text-sm select-none">{{ $initials }}</span>
                     </div>
                 </div>
             </div>
@@ -200,8 +239,23 @@
         
     </main>
 
-    <!-- Theme Control Script -->
+    <!-- Theme Control + Page Progress Bar Script -->
     <script>
+        // Page progress bar — tampil segera saat link diklik
+        (function() {
+            const bar = document.getElementById('page-progress');
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[href]');
+                if (!link) return;
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript') || link.target === '_blank') return;
+                if (bar) { bar.style.width = '70%'; bar.style.opacity = '1'; }
+            });
+            window.addEventListener('pageshow', function() {
+                if (bar) { bar.style.width = '100%'; setTimeout(() => { bar.style.opacity = '0'; bar.style.width = '0%'; }, 300); }
+            });
+        })();
+
         document.addEventListener('DOMContentLoaded', function() {
             const themeToggleBtns = document.querySelectorAll('#admin-theme-toggle, .mobile-theme-toggle');
             const themeIcons = document.querySelectorAll('#admin-theme-icon, .mobile-theme-icon');
@@ -227,11 +281,7 @@
                 btn.addEventListener('click', function() {
                     htmlElement.classList.toggle('dark');
                     updateIcons();
-                    if (htmlElement.classList.contains('dark')) {
-                        localStorage.setItem('theme', 'dark');
-                    } else {
-                        localStorage.setItem('theme', 'light');
-                    }
+                    localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
                 });
             });
         });
@@ -239,46 +289,53 @@
 
     @if(session('success'))
     <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: '{{ session('success') }}',
-            showConfirmButton: false,
-            timer: 2000,
-            background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
-            color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                showConfirmButton: false,
+                timer: 2000,
+                background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+            });
         });
     </script>
     @endif
     @if(session('error'))
     <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: '{{ session('error') }}',
-            showConfirmButton: true,
-            background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
-            color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: '{{ session('error') }}',
+                showConfirmButton: true,
+                background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+            });
         });
     </script>
     @endif
     @if($errors->any())
     <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Validasi Gagal!',
-            html: `
-                <ul style="text-align: left;">
-                    @foreach($errors->all() as $error)
-                        <li>- {{ $error }}</li>
-                    @endforeach
-                </ul>
-            `,
-            showConfirmButton: true,
-            background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
-            color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal!',
+                html: `
+                    <ul style="text-align: left;">
+                        @foreach($errors->all() as $error)
+                            <li>- {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                `,
+                showConfirmButton: true,
+                background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+            });
         });
     </script>
     @endif
 </body>
 </html>
+

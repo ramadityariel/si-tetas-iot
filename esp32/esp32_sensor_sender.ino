@@ -16,7 +16,7 @@ const char* WIFI_PASSWORD = "LabTNK24";
 
 // ── Konfigurasi API Laravel & Security ────────────────────────────────────────
 // Mengarah ke IP Lokal Laravel Anda (Port 8000)
-const String BASE_URL     = "http://10.188.101.217:8001/"; 
+const String BASE_URL     = "http://192.168.137.204:8001/"; 
 const char* apiKey        = "815171f9b522f1cd4cd95cb1d4410311"; // API Key disamakan
 
 // ── Interval pengiriman data (10 detik) ──────────────────────────────────────

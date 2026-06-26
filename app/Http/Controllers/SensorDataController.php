@@ -91,18 +91,49 @@ class SensorDataController extends Controller
 
         // ── 3. Simpan Data ke Tabel sensor_logs ────────────────────────────────
         try {
+            $ruleStatus = \App\Helpers\MonitoringHelper::getStatusLabel($validated['suhu'], $validated['kelembaban']);
+
             $sensorLog = SensorLog::create([
                 'temperature'       => $validated['suhu'],
                 'humidity'          => $validated['kelembaban'],
                 'fan_status'        => 0,
                 'lamp_status'       => 0,
                 'humidifier_status' => 0,
+                'rule_status'       => $ruleStatus,
             ]);
+
+            // Call FastAPI to get ML predictions
+            try {
+                $recent_logs = SensorLog::orderBy('id', 'desc')->take(15)->get()->reverse()->values();
+                $payload = [];
+                foreach ($recent_logs as $log) {
+                    $payload[] = [
+                        'temperature' => (float)$log->temperature,
+                        'humidity'    => (float)$log->humidity,
+                    ];
+                }
+
+                $response = \Illuminate\Support\Facades\Http::timeout(3)->post('http://127.0.0.1:8000/predict/advanced_combined', [
+                    'data' => $payload
+                ]);
+
+                if ($response->successful()) {
+                    $mlResult = $response->json();
+                    $sensorLog->update([
+                        'rf_prediction' => $mlResult['rf_prediction'] ?? null,
+                        'if_prediction' => $mlResult['if_prediction'] ?? null,
+                        'if_anomaly_score' => $mlResult['if_anomaly_score'] ?? null,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::warning('[ESP32] Gagal memanggil endpoint ML: ' . $e->getMessage());
+            }
 
             Log::info('[ESP32] Data sensor berhasil disimpan', [
                 'id'         => $sensorLog->id,
                 'temperature' => $sensorLog->temperature,
                 'humidity'    => $sensorLog->humidity,
+                'rule_status' => $ruleStatus,
                 'ip'         => $request->ip(),
                 'timestamp'  => now()->toDateTimeString(),
             ]);

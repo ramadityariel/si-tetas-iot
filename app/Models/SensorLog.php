@@ -15,6 +15,10 @@ class SensorLog extends Model
         'fan_status',
         'lamp_status',
         'humidifier_status',
+        'rf_prediction',
+        'if_prediction',
+        'if_anomaly_score',
+        'rule_status',
     ];
 
     /**

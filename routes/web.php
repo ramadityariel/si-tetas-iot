@@ -45,14 +45,33 @@ Route::get('/blog', function (\Illuminate\Http\Request $request) {
 Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'showPublic'])->name('blog.read');
 
 use App\Http\Controllers\MonitoringController;
+use App\Http\Controllers\AIMonitoringController;
 
 // Admin Routes protected by auth middleware
 Route::middleware(['auth', \App\Http\Middleware\SetLocale::class])->prefix('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // AI Monitoring Dashboard
+    Route::get('/ai-monitoring', [AIMonitoringController::class, 'index'])->name('ai-monitoring');
+    Route::get('/ai-monitoring/api/daily-status', [AIMonitoringController::class, 'getDailyStatusDistribution'])->name('ai-monitoring.daily-status');
+    Route::get('/ai-monitoring/api/realtime-zone', [AIMonitoringController::class, 'getRealtimeZoneChart'])->name('ai-monitoring.realtime-zone');
+    Route::get('/ai-monitoring/api/summary', [AIMonitoringController::class, 'getStatusSummary'])->name('ai-monitoring.summary');
+    Route::get('/ai-monitoring/api/hourly-trend', [AIMonitoringController::class, 'getHourlyTrend'])->name('ai-monitoring.hourly-trend');
+
+    // Threshold Settings
+    Route::get('/settings/threshold', [\App\Http\Controllers\ThresholdSettingController::class, 'index'])->name('settings.threshold');
+    Route::post('/settings/threshold', [\App\Http\Controllers\ThresholdSettingController::class, 'store'])->name('settings.threshold.store');
+
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('monitoring');
     Route::get('/monitoring/export-pdf', [MonitoringController::class, 'exportPDF'])->name('monitoring.export-pdf');
     Route::get('/monitoring/export-excel', [MonitoringController::class, 'exportExcel'])->name('monitoring.export-excel');
+
+    // Log Sensor & Log Anomali (separated)
+    Route::get('/sensor-logs', [\App\Http\Controllers\SensorLogController::class, 'index'])->name('sensor-logs');
+    Route::get('/sensor-logs/export-excel', [\App\Http\Controllers\SensorLogController::class, 'exportExcel'])->name('sensor-logs.export-excel');
+    
+    Route::get('/anomaly-logs', [\App\Http\Controllers\AnomalyLogController::class, 'index'])->name('anomaly-logs');
+    Route::get('/anomaly-logs/export-excel', [\App\Http\Controllers\AnomalyLogController::class, 'exportExcel'])->name('anomaly-logs.export-excel');
 
     Route::get('/prediksi', [\App\Http\Controllers\PredictionController::class, 'index'])->name('prediksi');
     Route::post('/prediksi/snapshot', [\App\Http\Controllers\PredictionController::class, 'snapshot'])->name('prediksi.snapshot');

@@ -23,6 +23,7 @@ from typing import Any, Generator
 import cv2
 import joblib
 import numpy as np
+import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
@@ -46,6 +47,9 @@ logger = logging.getLogger("si-tetas-api")
 APP_DIR           = Path(__file__).resolve().parent
 MODEL_CNN_PATH    = APP_DIR / "models" / "mobilenet_best.h5"
 MODEL_IF_PATH     = APP_DIR / "isolation_forest_model.joblib"
+SCALER_IF_PATH    = APP_DIR / "scaler_if.joblib"
+MODEL_RF_PATH     = APP_DIR / "random_forest_model.joblib"
+SCALER_RF_PATH    = APP_DIR / "scaler_rf.joblib"
 MODEL_RF_STATUS_PATH = APP_DIR / "sensor_rf_model.joblib"
 
 CLASS_NAMES           = ["fertil_hidup", "fertil_mati", "infertil"]
@@ -100,32 +104,42 @@ else:
     logger.warning(f"⚠️  File model CNN tidak ditemukan: {MODEL_CNN_PATH}")
 
 # ---------------------------------------------------------------------------
-# Load Model Isolation Forest
+# Load Advanced IF & RF Models (10 Features)
 # ---------------------------------------------------------------------------
 isolation_forest_model = None
-if MODEL_IF_PATH.exists():
+scaler_if = None
+if MODEL_IF_PATH.exists() and SCALER_IF_PATH.exists():
     try:
-        logger.info(f"Memuat model Isolation Forest dari: {MODEL_IF_PATH}")
         isolation_forest_model = joblib.load(str(MODEL_IF_PATH))
-        logger.info("✅ Model Isolation Forest berhasil dimuat.")
+        scaler_if = joblib.load(str(SCALER_IF_PATH))
+        logger.info("✅ Advanced Isolation Forest (10 Features) berhasil dimuat.")
     except Exception as e:
-        logger.error(f"❌ Gagal memuat model Isolation Forest: {e}")
-else:
-    logger.warning(f"⚠️  File model Isolation Forest tidak ditemukan: {MODEL_IF_PATH}")
+        logger.error(f"❌ Gagal memuat model IF tingkat lanjut: {e}")
+
+rf_10f_model = None
+scaler_rf = None
+if MODEL_RF_PATH.exists() and SCALER_RF_PATH.exists():
+    try:
+        rf_10f_model = joblib.load(str(MODEL_RF_PATH))
+        scaler_rf = joblib.load(str(SCALER_RF_PATH))
+        logger.info("✅ Advanced Random Forest (10 Features) berhasil dimuat.")
+    except Exception as e:
+        logger.error(f"❌ Gagal memuat model RF tingkat lanjut: {e}")
 
 # ---------------------------------------------------------------------------
-# Load Model Random Forest Status
+# Load Model Random Forest Status (Old)
 # ---------------------------------------------------------------------------
 sensor_rf_model = None
 if MODEL_RF_STATUS_PATH.exists():
     try:
         logger.info(f"Memuat model Random Forest dari: {MODEL_RF_STATUS_PATH}")
         sensor_rf_model = joblib.load(str(MODEL_RF_STATUS_PATH))
-        logger.info("✅ Model Random Forest berhasil dimuat.")
+        logger.info("✅ Model Random Forest (Old) berhasil dimuat.")
     except Exception as e:
-        logger.error(f"❌ Gagal memuat model Random Forest: {e}")
+        logger.error(f"❌ Gagal memuat model Random Forest (Old): {e}")
 else:
-    logger.warning(f"⚠️  File model Random Forest tidak ditemukan: {MODEL_RF_STATUS_PATH}")
+    logger.warning(f"⚠️  File model Random Forest (Old) tidak ditemukan: {MODEL_RF_STATUS_PATH}")
+
 
 # ---------------------------------------------------------------------------
 # Camera Manager  —  thread-safe singleton
@@ -669,6 +683,98 @@ def predict_status_batch(payload: BatchStatusPredictionInput) -> list[dict]:
             status_code=500,
             detail=f"Terjadi kesalahan saat prediksi status batch: {exc}",
         ) from exc
+
+
+@app.post("/predict/advanced_combined", tags=["Machine Learning"])
+def predict_advanced_combined(payload: BatchStatusPredictionInput) -> dict:
+    """
+    Prediksi gabungan menggunakan model Random Forest dan Isolation Forest yang membutuhkan 10 fitur.
+    Menerima histori (batch) minimal 11 record, melakukan perhitungan rolling, dan memprediksi baris terakhir.
+    """
+    if rf_10f_model is None or isolation_forest_model is None or scaler_rf is None or scaler_if is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Advanced ML models (10 features) atau scalernya belum dimuat.",
+        )
+
+    if len(payload.data) < 11:
+        # Jika histori kurang dari 11, kembalikan null
+        return {
+            "rf_prediction": None,
+            "if_prediction": None,
+            "if_anomaly_score": None,
+            "message": "Not enough history to compute rolling features."
+        }
+
+    # Convert to DataFrame
+    df = pd.DataFrame([item.dict() for item in payload.data])
+    
+    # Menghitung fitur turunan (sama seperti randomforest_streamlit_app.py)
+    df["temperature_diff"] = df["temperature"].diff(1)
+    df["humidity_diff"] = df["humidity"].diff(1)
+
+    df["temperature_rolling_mean_5"] = df["temperature"].shift(1).rolling(window=5).mean()
+    df["humidity_rolling_mean_5"] = df["humidity"].shift(1).rolling(window=5).mean()
+
+    df["temperature_rolling_std_5"] = df["temperature"].shift(1).rolling(window=5).std()
+    df["humidity_rolling_std_5"] = df["humidity"].shift(1).rolling(window=5).std()
+
+    prev_temp = df["temperature"].shift(1)
+    prev_hum = df["humidity"].shift(1)
+
+    df["temperature_change_rate"] = df["temperature_diff"] / prev_temp
+    df["humidity_change_rate"] = df["humidity_diff"] / prev_hum
+
+    df["temperature_rolling_mean_10"] = df["temperature"].shift(1).rolling(window=10).mean()
+    df["humidity_rolling_std_10"] = df["humidity"].shift(1).rolling(window=10).std()
+
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+    
+    # Ambil baris terakhir setelah shift dan rolling terisi
+    last_row = df.iloc[-1:]
+    
+    if last_row.isnull().values.any():
+        return {
+            "rf_prediction": None,
+            "if_prediction": None,
+            "if_anomaly_score": None,
+            "message": "NaN values produced during feature engineering."
+        }
+
+    FEATURE_COLS = [
+        "temperature_diff",
+        "humidity_diff",
+        "temperature_rolling_mean_5",
+        "humidity_rolling_mean_5",
+        "temperature_rolling_std_5",
+        "humidity_rolling_std_5",
+        "temperature_change_rate",
+        "humidity_change_rate",
+        "temperature_rolling_mean_10",
+        "humidity_rolling_std_10",
+    ]
+
+    x_values = last_row[FEATURE_COLS]
+    
+    try:
+        # Prediksi RF
+        x_scaled_rf = scaler_rf.transform(x_values)
+        rf_pred = rf_10f_model.predict(x_scaled_rf)[0]
+
+        # Prediksi IF
+        x_scaled_if = scaler_if.transform(x_values)
+        if_pred = int(isolation_forest_model.predict(x_scaled_if)[0])
+        if_score = float(isolation_forest_model.decision_function(x_scaled_if)[0])
+
+        return {
+            "rf_prediction": str(rf_pred),
+            "if_prediction": if_pred,
+            "if_anomaly_score": if_score,
+            "message": "Success"
+        }
+    except Exception as exc:
+        logger.error(f"Error pada advanced combined: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 # ---------------------------------------------------------------------------

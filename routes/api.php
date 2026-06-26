@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SensorDataController;
+use App\Http\Controllers\Api\ThresholdApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +18,10 @@ use App\Http\Controllers\SensorDataController;
 Route::post('/kirim-data', [SensorDataController::class, 'kirimData'])
     ->name('sensor.kirim-data');
 
+// ── ESP32 Threshold Endpoints ──────────────────────────────────────────────
+Route::get('/get-threshold', [ThresholdApiController::class, 'getThreshold'])->name('api.get-threshold');
+Route::post('/update-threshold', [ThresholdApiController::class, 'updateThreshold'])->name('api.update-threshold');
+
 // ── Health-check (opsional, untuk tes koneksi dari browser/Serial Monitor) ──
 Route::get('/ping', function () {
     return response()->json([
@@ -25,3 +30,4 @@ Route::get('/ping', function () {
         'time'    => now()->toDateTimeString(),
     ]);
 })->name('api.ping');
+
