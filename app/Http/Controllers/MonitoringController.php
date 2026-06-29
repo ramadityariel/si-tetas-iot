@@ -10,70 +10,153 @@ class MonitoringController extends Controller
 {
     public function index()
     {
-        $latest_sensor = \App\Models\SensorLog::latest()->first();
-        
-        // Catch-up check for anomalies on the latest 15 sensor logs
-        $recent_logs = \App\Models\SensorLog::latest()->take(15)->get();
-        if ($recent_logs->isNotEmpty()) {
-            $existing_timestamps = \App\Models\AnomalyLog::whereIn('created_at', $recent_logs->pluck('created_at'))
-                ->pluck('created_at')
-                ->map(fn($t) => (string)$t)
-                ->toArray();
-            foreach ($recent_logs as $log) {
-                if (!in_array((string)$log->created_at, $existing_timestamps)) {
-                    \App\Models\AnomalyLog::detectAndSave($log);
+        $table_logs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
+        $anomaly_logs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
+        $chart_labels = [];
+        $temp_data = [];
+        $humid_data = [];
+        $latest_sensor = null;
+
+        try {
+            $firebaseCredentials = base_path(env('FIREBASE_CREDENTIALS', 'storage/app/firebase-credentials.json'));
+            $firebaseDbUrl       = env('FIREBASE_DATABASE_URL', 'https://si-tetas-default-rtdb.firebaseio.com/');
+
+            if (file_exists($firebaseCredentials)) {
+                $factory = (new \Kreait\Firebase\Factory)
+                    ->withServiceAccount($firebaseCredentials)
+                    ->withDatabaseUri($firebaseDbUrl);
+
+                $database = $factory->createDatabase();
+
+                $thresholds = array_merge([
+                    'suhu_bawah'  => 37.0,
+                    'suhu_atas'   => 38.0,
+                    'humid_bawah' => 55.0,
+                    'humid_atas'  => 60.0,
+                ], (array)($database->getReference('settings/threshold')->getValue() ?: []));
+
+                $rawLogs = $database->getReference('log_sensor')->getValue() ?: [];
+                
+                $processedLogs = [];
+                $processedAnomalies = [];
+                
+                foreach ($rawLogs as $key => $log) {
+                    if (!is_array($log)) continue;
+                    
+                    $temp      = isset($log['suhu']) ? round((float)$log['suhu'], 1) : 0.0;
+                    $humid     = isset($log['kelembaban']) ? round((float)$log['kelembaban'], 1) : 0.0;
+                    $timestamp = isset($log['timestamp']) ? (int)$log['timestamp'] : 0;
+                    if ($timestamp === 0) continue;
+
+                    $createdAt = \Carbon\Carbon::createFromTimestamp($timestamp)->timezone('Asia/Jakarta');
+
+                    // Logic for Status (Sensor Log)
+                    $status = 'Normal';
+                    if ($temp < $thresholds['suhu_bawah'] || $temp > $thresholds['suhu_atas'] || $humid < $thresholds['humid_bawah'] || $humid > $thresholds['humid_atas']) {
+                        $status = 'Critical';
+                    }
+                    if ($temp >= 36.5 && $temp <= 38.5 && $humid >= 50 && $humid <= 70) {
+                        $statusPrediction = 'Optimal';
+                    } elseif ($temp >= 35.0 && $temp <= 39.0 && $humid >= 40 && $humid <= 80) {
+                        $statusPrediction = 'Warning';
+                    } else {
+                        $statusPrediction = 'Critical';
+                    }
+
+                    $sensorObj = (object)[
+                        'created_at' => $createdAt,
+                        'temperature' => $temp,
+                        'humidity' => $humid,
+                        'status_prediction' => $statusPrediction,
+                        'timestamp' => $timestamp,
+                        'fan_status' => isset($log['fan_status']) ? (bool)$log['fan_status'] : false,
+                        'lamp_status' => isset($log['lamp_status']) ? (bool)$log['lamp_status'] : false,
+                        'humidifier_status' => isset($log['humidifier_status']) ? (bool)$log['humidifier_status'] : false,
+                    ];
+                    $processedLogs[] = $sensorObj;
+
+                    // Logic for Anomaly
+                    $reasons = [];
+                    if ($temp > $thresholds['suhu_atas']) $reasons[] = 'Suhu Tinggi';
+                    elseif ($temp < $thresholds['suhu_bawah']) $reasons[] = 'Suhu Rendah';
+                    if ($humid > $thresholds['humid_atas']) $reasons[] = 'Kelembaban Tinggi';
+                    elseif ($humid < $thresholds['humid_bawah']) $reasons[] = 'Kelembaban Rendah';
+
+                    if (!empty($reasons)) {
+                        $processedAnomalies[] = (object)[
+                            'created_at'   => $createdAt,
+                            'temperature'  => $temp,
+                            'humidity'     => $humid,
+                            'anomaly_type' => implode(' & ', $reasons),
+                            'description'  => 'Terdeteksi ' . strtolower(implode(' & ', $reasons)),
+                            'timestamp'    => $timestamp,
+                        ];
+                    }
+                }
+
+                // Sort descending
+                usort($processedLogs, fn($a, $b) => $b->timestamp <=> $a->timestamp);
+                usort($processedAnomalies, fn($a, $b) => $b->timestamp <=> $a->timestamp);
+
+                $latest_sensor = $processedLogs[0] ?? null;
+
+                // Paginate Sensor Logs
+                $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+                $perPage = 10;
+                $currentSensorItems = array_slice($processedLogs, ($currentPage - 1) * $perPage, $perPage);
+                $table_logs = new \Illuminate\Pagination\LengthAwarePaginator($currentSensorItems, count($processedLogs), $perPage, $currentPage, [
+                    'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()
+                ]);
+
+                // Paginate Anomaly Logs
+                $currentAnomalyItems = array_slice($processedAnomalies, ($currentPage - 1) * $perPage, $perPage);
+                $anomaly_logs = new \Illuminate\Pagination\LengthAwarePaginator($currentAnomalyItems, count($processedAnomalies), $perPage, $currentPage, [
+                    'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()
+                ]);
+
+                // Charts Data
+                $range = request('range', 'today');
+                $now = \Carbon\Carbon::now('Asia/Jakarta');
+                $startTime = $range === 'week' ? $now->copy()->startOfWeek() : $now->copy()->startOfDay();
+
+                $filteredChartLogs = array_filter($processedLogs, function($log) use ($startTime) {
+                    return $log->created_at->greaterThanOrEqualTo($startTime);
+                });
+
+                // Reverse for chronological order
+                $filteredChartLogs = array_reverse($filteredChartLogs);
+                
+                // Downsample to max 60 points
+                $totalPoints = count($filteredChartLogs);
+                $maxPoints = 60;
+                $chartLogs = [];
+                
+                if ($totalPoints > $maxPoints) {
+                    $step = $totalPoints / $maxPoints;
+                    for ($i = 0; $i < $maxPoints; $i++) {
+                        $index = (int) floor($i * $step);
+                        if (isset($filteredChartLogs[$index])) {
+                            $chartLogs[] = $filteredChartLogs[$index];
+                        }
+                    }
+                } else {
+                    $chartLogs = $filteredChartLogs;
+                }
+                
+                foreach ($chartLogs as $cl) {
+                    if ($range === 'week') {
+                        $chart_labels[] = $cl->created_at->format('D H:i');
+                    } else {
+                        $chart_labels[] = $cl->created_at->format('H:i');
+                    }
+                    $temp_data[] = $cl->temperature;
+                    $humid_data[] = $cl->humidity;
                 }
             }
-        }
-        
-        $anomaly_logs = \App\Models\AnomalyLog::latest()->paginate(10);
-        
-        // 20 data for charts (reversed for chronological order)
-        $chartLogs = \App\Models\SensorLog::latest()->take(20)->get()->reverse();
-        
-        $chart_labels = $chartLogs->pluck('created_at')->map(fn($date) => $date->format('H:i'))->toArray();
-        $temp_data = $chartLogs->pluck('temperature')->toArray();
-        $humid_data = $chartLogs->pluck('humidity')->toArray();
-        
-        // Paginated data for table
-        $table_logs = \App\Models\SensorLog::latest()->paginate(10);
-        
-        // Predict statuses using Random Forest Classifier in FastAPI
-        $payload = [];
-        foreach ($table_logs as $log) {
-            $payload[] = [
-                'temperature' => (float)$log->temperature,
-                'humidity' => (float)$log->humidity,
-            ];
-        }
-        
-        $predictions = [];
-        try {
-            $response = \Illuminate\Support\Facades\Http::timeout(3)->post('http://127.0.0.1:8000/predict/status/batch', [
-                'data' => $payload
-            ]);
-            
-            if ($response->successful()) {
-                $predictions = $response->json();
-            }
         } catch (\Exception $e) {
-            // FastAPI is offline, fallback will be used
+            logger()->error('[Monitoring] Firebase Error: ' . $e->getMessage());
         }
-        
-        // Map predictions back to logs
-        foreach ($table_logs as $index => $log) {
-            $temp = $log->temperature;
-            $hum = $log->humidity;
-            if (($temp >= 36.5 && $temp <= 38.5) && ($hum >= 50 && $hum <= 70)) {
-                $fallback = 'Optimal';
-            } elseif (($temp >= 35.0 && $temp <= 39.0) && ($hum >= 40 && $hum <= 80)) {
-                $fallback = 'Warning';
-            } else {
-                $fallback = 'Critical';
-            }
-            $log->status_prediction = $predictions[$index]['status'] ?? $fallback;
-        }
-        
+
         return view('monitoring', compact('latest_sensor', 'chart_labels', 'temp_data', 'humid_data', 'table_logs', 'anomaly_logs'));
     }
 

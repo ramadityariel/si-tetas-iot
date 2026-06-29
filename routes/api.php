@@ -22,6 +22,12 @@ Route::post('/kirim-data', [SensorDataController::class, 'kirimData'])
 Route::get('/get-threshold', [ThresholdApiController::class, 'getThreshold'])->name('api.get-threshold');
 Route::post('/update-threshold', [ThresholdApiController::class, 'updateThreshold'])->name('api.update-threshold');
 
+// ── Candling Endpoints ──────────────────────────────────────────────────────
+use App\Http\Controllers\Api\CandlingApiController;
+Route::post('/upload-candling', [CandlingApiController::class, 'uploadCandling'])->name('api.upload-candling');
+Route::get('/get-session-result/{session_id}', [CandlingApiController::class, 'getSessionResult'])->name('api.get-session-result');
+Route::post('/update-egg-status', [CandlingApiController::class, 'updateEggStatus'])->name('api.update-egg-status');
+
 // ── Health-check (opsional, untuk tes koneksi dari browser/Serial Monitor) ──
 Route::get('/ping', function () {
     return response()->json([

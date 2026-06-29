@@ -15,10 +15,12 @@ class SensorData extends Model
     protected $fillable = [
         'suhu',       // Suhu dalam °C dari DHT22 / sensor simulasi
         'kelembaban', // Kelembaban dalam % dari DHT22 / sensor simulasi
+        'water_level',
     ];
 
     protected $casts = [
         'suhu'       => 'float',
         'kelembaban' => 'float',
+        'water_level' => 'float',
     ];
 }

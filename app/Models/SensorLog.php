@@ -19,6 +19,7 @@ class SensorLog extends Model
         'if_prediction',
         'if_anomaly_score',
         'rule_status',
+        'water_level',
     ];
 
     /**

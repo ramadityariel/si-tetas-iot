@@ -25,7 +25,7 @@ return [
         'btn_all' => 'View All',
     ],
     'demo' => [
-        'title' => 'Team Demo',
+        'title' => 'Profile Video',
         'desc' => 'Swipe manually to the side using your mouse or touch screen. Click on a video to enlarge the view interactively.',
         'slide1_badge' => '🎬 Main Documentation',
         'slide1_desc' => 'Project Simulation & Research Results',

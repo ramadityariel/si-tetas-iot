@@ -72,6 +72,7 @@ class SensorDataController extends Controller
             $validated = $request->validate([
                 'suhu'       => ['required', 'numeric', 'between:-50,150'],
                 'kelembaban' => ['required', 'numeric', 'between:0,100'],
+                'water_level'=> ['nullable', 'numeric', 'between:0,100'],
                 'timestamp'  => ['nullable', 'integer'],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -99,6 +100,7 @@ class SensorDataController extends Controller
                 'fan_status'        => 0,
                 'lamp_status'       => 0,
                 'humidifier_status' => 0,
+                'water_level'       => $validated['water_level'] ?? null,
                 'rule_status'       => $ruleStatus,
             ]);
 

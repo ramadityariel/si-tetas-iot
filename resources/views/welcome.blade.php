@@ -2,18 +2,18 @@
 
 @php
     // <!-- UBAH LINK YOUTUBE DI VARIABEL DI BAWAH JIKA ADA VIDEO BARU -->
-    $video_url = 'https://www.youtube.com/embed/qdGOl990uLQ';
+    $video_url = 'https://www.youtube.com/embed/r6PQLMwlVUM';
     
     // <!-- ARRAY DATA TIM FINAL & STERIL DARI ERROR PARSE PHP -->
     $team = [
         ['name' => 'Ariel Pasha Ramaditya', 'role' => 'Software Engineer', 'image' => 'ariel.jpg', 'quote' => 'Membangun arsitektur web robust dan integrasi API IoT yang real-time.'],
-        ['name' => 'Della', 'role' => 'Project Manager', 'image' => 'anggota1.jpg', 'quote' => 'Mengorkestrasi timeline pengembangan sistem agar rilis tepat waktu dan presisi.'],
-        ['name' => 'Chris', 'role' => '3D Desain', 'image' => 'anggota2.jpg', 'quote' => 'Merancang pemodelan 3D mekanik inkubator dengan presisi tinggi.'],
-        ['name' => 'Irdan Rifqy', 'role' => 'Hardware', 'image' => 'anggota3.jpg', 'quote' => 'Merakit skema sirkuit mikrokontroler dan kalibrasi akurasi sensor.'],
-        ['name' => 'Setia Mega', 'role' => 'Hardware', 'image' => 'anggota4.jpg', 'quote' => 'Optimalisasi manajemen daya hardware dan kestabilan aktuator pemanas.'],
-        ['name' => 'Fathir', 'role' => 'Machine Learning Engineer', 'image' => 'anggota5.jpg', 'quote' => 'Mengembangkan algoritma visi komputer untuk deteksi otomatis embrio telur.'],
-        ['name' => 'Fadilla', 'role' => 'Hardware & Publication', 'image' => 'anggota6.jpg', 'quote' => 'Menjembatani validasi teknis perangkat dengan publikasi ilmiah yang kredibel.'],
-        ['name' => 'Dinda', 'role' => 'Software Engineer & Video Editor', 'image' => 'anggota7.jpg', 'quote' => 'Mengembangkan logika front-end sekaligus mengemas visualisasi video dokumentasi proyek.']
+        ['name' => 'Della Arviyanti', 'role' => 'Project Manager', 'image' => 'anggota1.jpg', 'quote' => 'Mengorkestrasi timeline pengembangan sistem agar rilis tepat waktu dan presisi.'],
+        ['name' => 'Christiano Nicoma Boseke', 'role' => '3D Desain', 'image' => 'anggota2.jpg', 'quote' => 'Merancang pemodelan 3D mekanik inkubator dengan presisi tinggi.'],
+        ['name' => 'Iran Rifqy Widya ', 'role' => 'Hardware', 'image' => 'anggota3.jpg', 'quote' => 'Merakit skema sirkuit mikrokontroler dan kalibrasi akurasi sensor.'],
+        ['name' => 'Setya Mega Bagaskara', 'role' => 'Hardware', 'image' => 'anggota4.jpg', 'quote' => 'Optimalisasi manajemen daya hardware dan kestabilan aktuator pemanas.'],
+        ['name' => 'Fathir Gundireja', 'role' => 'Machine Learning Engineer', 'image' => 'anggota5.jpg', 'quote' => 'Mengembangkan algoritma visi komputer untuk deteksi otomatis embrio telur.'],
+        ['name' => 'Fadila Azahra', 'role' => 'Hardware & Publication', 'image' => 'anggota6.jpg', 'quote' => 'Menjembatani validasi teknis perangkat dengan publikasi ilmiah yang kredibel.'],
+        ['name' => 'Dinda Octhavia', 'role' => 'Software Engineer & Video Editor', 'image' => 'anggota7.jpg', 'quote' => 'Mengembangkan logika front-end sekaligus mengemas visualisasi video dokumentasi proyek.']
     ]; 
 @endphp
 
@@ -326,72 +326,25 @@
         <p class="text-slate-700 dark:text-white/80 max-w-2xl mx-auto text-sm font-light">{!! __('welcome.demo.desc') !!}</p>
     </div>
 
-    <div class="relative z-10 max-w-7xl mx-auto px-8">
-        <div class="swiper demoTimSwiper">
-            <div class="swiper-wrapper">
-                
-                <!-- Slide 1 -->
-                <div class="swiper-slide">
-                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide1_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
-                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide1_badge') !!}</div>
-                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
-                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
-                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide1_desc') !!}</p></div>
-                    </div>
+    <div class="relative z-10 max-w-5xl mx-auto px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Slide 1 -->
+            <div onclick="openVideoModal('https://www.youtube.com/embed/r6PQLMwlVUM', '{!! __('welcome.demo.slide1_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
+                <div class="absolute inset-0 bg-slate-500/40 dark:bg-slate-500/50 transition-colors z-0 flex items-center justify-center">
+                    <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
                 </div>
-
-                <!-- Slide 2 -->
-                <div class="swiper-slide">
-                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide2_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
-                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide2_badge') !!}</div>
-                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
-                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1555664424-778a1e5e1b48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
-                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide2_desc') !!}</p></div>
-                    </div>
-                </div>
-
-                <!-- Slide 3 -->
-                <div class="swiper-slide">
-                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide3_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
-                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide3_badge') !!}</div>
-                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
-                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
-                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide3_desc') !!}</p></div>
-                    </div>
-                </div>
-
-                <!-- Slide 4 -->
-                <div class="swiper-slide">
-                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide4_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
-                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide4_badge') !!}</div>
-                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
-                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
-                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide4_desc') !!}</p></div>
-                    </div>
-                </div>
-
-                <!-- Slide 5 -->
-                <div class="swiper-slide">
-                    <div onclick="openVideoModal('https://www.youtube.com/embed/qdGOl990uLQ', '{!! __('welcome.demo.slide5_title') !!}')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
-                        <div class="absolute top-3 left-3 z-10 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-bold border border-white/20">{!! __('welcome.demo.slide5_badge') !!}</div>
-                        <div class="absolute inset-0 bg-black/30 dark:bg-black/40 group-hover:bg-black/10 dark:group-hover:bg-black/20 transition-colors z-0 flex items-center justify-center">
-                            <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover" alt="Video Thumbnail">
-                        <div class="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent text-white"><p class="text-xs font-bold tracking-wide truncate">{!! __('welcome.demo.slide5_desc') !!}</p></div>
-                    </div>
-                </div>
-
+                <img src="{{ asset('images/bg peternakan.png') }}" onerror="this.src='https://images.unsplash.com/photo-1596568359553-9799b66bb159?q=80&w=2070&auto=format&fit=crop'" class="w-full h-full object-cover grayscale-[30%]" alt="Video Thumbnail">
             </div>
-            <div class="swiper-pagination !bottom-0"></div>
+
+            <!-- Slide 2 (Menggunakan link Google Drive jika bisa di-embed, atau samakan dengan Youtube) -->
+            <div onclick="window.open('https://drive.google.com/file/d/1_3pMAf_w4T_IYKNcphxIGYJXe93EklNl/view?usp=drive_link', '_blank')" class="w-full rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 overflow-hidden backdrop-blur-md bg-white/40 dark:bg-white/5 aspect-video relative group cursor-pointer hover:border-sky-500 dark:hover:border-sky-400 hover:scale-105 transition-all duration-300 transform-gpu">
+                <div class="absolute inset-0 bg-slate-500/40 dark:bg-slate-500/50 transition-colors z-0 flex items-center justify-center">
+                    <div class="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300"><span class="material-symbols-outlined text-2xl pl-1">play_arrow</span></div>
+                </div>
+                <img src="{{ asset('images/bg peternakan.png') }}" onerror="this.src='https://images.unsplash.com/photo-1596568359553-9799b66bb159?q=80&w=2070&auto=format&fit=crop'" class="w-full h-full object-cover grayscale-[30%]" alt="Video Thumbnail">
+            </div>
+
         </div>
     </div>
 </section>
@@ -613,27 +566,10 @@
         window.addEventListener('scroll', onScroll);
         onScroll();
 
-        // Inisialisasi Carousel Swiper Demo Tim (Infinite Loop + Manual Grab)
-        const swiper = new Swiper('.demoTimSwiper', {
-            slidesPerView: 1,
-            spaceBetween: 24,
-            loop: true,             
-            grabCursor: true,
-            freeMode: true,       // Membuat geseran (swipe) benar-benar mengalir bebas
-            mousewheel: {         // Memungkinkan pengguna scroll/swipe pakai touchpad laptop atau mouse wheel
-                forceToAxis: true,
-            },
-            speed: 800,           // Membuat transisi slide lebih halus (800ms)
-            touchRatio: 1.5,      // Membuat swiping lebih sensitif/responsif terhadap tarikan
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            breakpoints: {
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
-            },
-        });
+        // Inisialisasi Carousel Swiper Demo Tim (Removed in favor of grid layout)
+        // Swiper logic is removed
+        
+        // Ensure Modal logic works properly
     });
 
     function openVideoModal(videoUrl, title) {

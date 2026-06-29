@@ -105,29 +105,19 @@
                 <span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">{{ __('admin.sidebar.monitoring') }}</span>
             </a>
             
-            <!-- Submenu for Logs & AI Monitoring -->
-            <div class="space-y-0.5 ml-6">
-                <a class="{{ request()->routeIs('sensor-logs') ? 'bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-lg flex items-center gap-2.5 px-3 py-2 transition-all hover:translate-x-1" href="{{ route('sensor-logs') }}">
-                    <span class="material-symbols-outlined" style="font-size:16px" data-icon="description">description</span>
-                    <span class="font-['Plus_Jakarta_Sans'] font-medium text-xs">{{ __('admin.sidebar.sensor_logs') }}</span>
-                </a>
-                <a class="{{ request()->routeIs('anomaly-logs') ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-lg flex items-center gap-2.5 px-3 py-2 transition-all hover:translate-x-1" href="{{ route('anomaly-logs') }}">
-                    <span class="material-symbols-outlined" style="font-size:16px" data-icon="warning">warning</span>
-                    <span class="font-['Plus_Jakarta_Sans'] font-medium text-xs">{{ __('admin.sidebar.anomaly_logs') }}</span>
-                </a>
+            <a class="{{ request()->routeIs('admin.candling') ? 'bg-[#35627C] text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-xl flex items-center gap-3 px-4 py-3 transition-all hover:translate-x-1" href="{{ route('admin.candling') }}">
+                <span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+                <span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">{{ __('admin.sidebar.candling') }}</span>
+            </a>
+            
 
-            </div>
             
             <a class="{{ request()->routeIs('settings.threshold') ? 'bg-[#35627C] text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-xl flex items-center gap-3 px-4 py-3 transition-all hover:translate-x-1" href="{{ route('settings.threshold') }}">
                 <span class="material-symbols-outlined" data-icon="tune">tune</span>
                 <span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">Threshold Settings</span>
             </a>
             
-            <a class="{{ request()->routeIs('prediksi') ? 'bg-[#35627C] text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-xl flex items-center gap-3 px-4 py-3 transition-all hover:translate-x-1" href="{{ route('prediksi') }}">
-                <span class="material-symbols-outlined" data-icon="analytics">analytics</span>
-                <span class="font-['Plus_Jakarta_Sans'] font-medium text-sm">{{ __('admin.sidebar.prediction') }}</span>
-            </a>
-            
+
             @if(auth()->check() && auth()->user()->role === 'super_admin')
             <a class="{{ request()->routeIs('users.*') ? 'bg-[#35627C] text-white shadow-lg' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10' }} rounded-xl flex items-center gap-3 px-4 py-3 transition-all hover:translate-x-1" href="{{ route('users.index') }}">
                 <span class="material-symbols-outlined" data-icon="group">group</span>

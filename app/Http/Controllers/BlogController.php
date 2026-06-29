@@ -22,7 +22,12 @@ class BlogController extends Controller
             });
         }
         $articles = $query->latest()->get();
-        return view('blog', compact('articles'));
+
+        $totalArticles = Article::count();
+        $publishedArticles = Article::where('status', 'published')->count();
+        $draftArticles = Article::where('status', 'draft')->count();
+
+        return view('blog', compact('articles', 'totalArticles', 'publishedArticles', 'draftArticles'));
     }
 
     public function create()
@@ -183,14 +188,10 @@ class BlogController extends Controller
             return null;
         }
 
-        $pathname = $file->getPathname();
-        $contents = @file_get_contents($pathname);
-        if ($contents === false) {
+        $relativePath = $file->store('blog_thumbnails', 'public');
+        if (!$relativePath) {
             return null;
         }
-
-        $relativePath = 'blog_thumbnails/'.$file->hashName();
-        Storage::disk('public')->put($relativePath, $contents);
 
         return $relativePath;
     }

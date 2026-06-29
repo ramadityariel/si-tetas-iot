@@ -66,12 +66,8 @@ Route::middleware(['auth', \App\Http\Middleware\SetLocale::class])->prefix('admi
     Route::get('/monitoring/export-pdf', [MonitoringController::class, 'exportPDF'])->name('monitoring.export-pdf');
     Route::get('/monitoring/export-excel', [MonitoringController::class, 'exportExcel'])->name('monitoring.export-excel');
 
-    // Log Sensor & Log Anomali (separated)
-    Route::get('/sensor-logs', [\App\Http\Controllers\SensorLogController::class, 'index'])->name('sensor-logs');
-    Route::get('/sensor-logs/export-excel', [\App\Http\Controllers\SensorLogController::class, 'exportExcel'])->name('sensor-logs.export-excel');
-    
-    Route::get('/anomaly-logs', [\App\Http\Controllers\AnomalyLogController::class, 'index'])->name('anomaly-logs');
-    Route::get('/anomaly-logs/export-excel', [\App\Http\Controllers\AnomalyLogController::class, 'exportExcel'])->name('anomaly-logs.export-excel');
+    // Candling Analysis
+    Route::get('/candling', [\App\Http\Controllers\CandlingController::class, 'index'])->name('admin.candling');
 
     Route::get('/prediksi', [\App\Http\Controllers\PredictionController::class, 'index'])->name('prediksi');
     Route::post('/prediksi/snapshot', [\App\Http\Controllers\PredictionController::class, 'snapshot'])->name('prediksi.snapshot');

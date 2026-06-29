@@ -28,7 +28,7 @@
     </div>
     
     <!-- Summary Bento Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
         <!-- Card 1 -->
         <div class="group bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl flex flex-col justify-between h-32 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(56,189,248,0.1)] dark:hover:border-sky-500/30 relative overflow-hidden">
             <div class="absolute -right-4 -top-4 w-20 h-20 bg-sky-50 dark:bg-sky-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
@@ -93,6 +93,19 @@
                 <span class="text-xl font-black text-[#194A63] dark:text-white font-headline">{{ ($latest_sensor->humidifier_status ?? false) ? __('admin.monitoring.active') : __('admin.monitoring.inactive') }}</span>
             </div>
         </div>
+        
+        <!-- Card 6: Water Level -->
+        <div class="group bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl flex flex-col justify-between h-32 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_20px_40px_rgba(6,182,212,0.1)] dark:hover:border-cyan-500/30 relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-cyan-50 dark:bg-cyan-500/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700"></div>
+            <div class="relative z-10 flex justify-between items-start">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-body">Water Level</span>
+                <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 transition-colors duration-300">waves</span>
+            </div>
+            <div class="flex items-baseline gap-1 relative z-10 transform group-hover:translate-x-1 transition-transform duration-300">
+                <span class="text-4xl font-extrabold text-[#194A63] dark:text-white font-headline" data-target="{{ $latest_sensor->water_level ?? 0 }}" data-decimals="0">0</span>
+                <span class="text-xl font-bold text-[#35627C] dark:text-cyan-400 font-headline">%</span>
+            </div>
+        </div>
     </div>
     
     <!-- Detailed Charts -->
@@ -105,10 +118,12 @@
                     <h3 class="text-xl font-bold text-[#194A63] dark:text-white font-headline">{{ __('admin.monitoring.temp_history') }}</h3>
                     <p class="text-sm text-slate-500 dark:text-slate-400 font-body">{{ __('admin.monitoring.temp_desc') }}</p>
                 </div>
+                @php
+                    $currentRange = request('range', 'today');
+                @endphp
                 <div class="flex items-center bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-full p-1 font-body">
-                    <button class="px-4 py-1.5 text-xs font-bold bg-[#35627C] dark:bg-sky-500 text-white rounded-full shadow-sm">{{ __('admin.monitoring.today') }}</button>
-                    <button class="px-4 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-[#194A63] dark:hover:text-white transition-colors">{{ __('admin.monitoring.this_week') }}</button>
-                    <button class="px-4 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-[#194A63] dark:hover:text-white transition-colors">{{ __('admin.monitoring.custom') }}</button>
+                    <a href="{{ route('monitoring', ['range' => 'today']) }}" class="px-4 py-1.5 text-xs font-bold rounded-full transition-colors {{ $currentRange === 'today' ? 'bg-[#35627C] dark:bg-sky-500 text-white shadow-sm' : 'font-medium text-slate-500 dark:text-slate-400 hover:text-[#194A63] dark:hover:text-white' }}">{{ __('admin.monitoring.today') }}</a>
+                    <a href="{{ route('monitoring', ['range' => 'week']) }}" class="px-4 py-1.5 text-xs font-bold rounded-full transition-colors {{ $currentRange === 'week' ? 'bg-[#35627C] dark:bg-sky-500 text-white shadow-sm' : 'font-medium text-slate-500 dark:text-slate-400 hover:text-[#194A63] dark:hover:text-white' }}">{{ __('admin.monitoring.this_week') }}</a>
                 </div>
             </div>
             
@@ -132,6 +147,7 @@
     </div>
     
     <!-- Monitoring Tables/Alerts -->
+    <div class="flex flex-col gap-8 mt-8">
     <div id="table-container" class="bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl overflow-hidden relative transition-all duration-300">
         <div class="p-6 border-b border-slate-100 dark:border-white/10">
             <h3 class="text-xl font-bold text-[#194A63] dark:text-white font-headline">{{ __('admin.monitoring.log_title') }}</h3>
@@ -145,7 +161,6 @@
                         <th class="px-6 py-4">{{ __('admin.monitoring.temp') }}</th>
                         <th class="px-6 py-4">{{ __('admin.monitoring.humid') }}</th>
                         <th class="px-6 py-4">{{ __('admin.monitoring.status') }}</th>
-                        <th class="px-6 py-4 text-right">{{ __('admin.monitoring.action') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -164,13 +179,10 @@
                             <span class="px-3 py-1 bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 rounded-full text-xs font-bold">{{ __('admin.monitoring.critical') }}</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <button class="text-[#715B36] dark:text-sky-400 hover:underline font-bold">{{ __('admin.monitoring.detail') }}</button>
-                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.monitoring.no_data') }}</td>
+                        <td colspan="5" class="px-6 py-4 text-center text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.monitoring.no_data') }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -182,7 +194,7 @@
     </div>
 
     <!-- Anomaly Data Sensor Log -->
-    <div class="mt-8 bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl overflow-hidden relative transition-all duration-300">
+    <div class="bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-white/10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl overflow-hidden relative transition-all duration-300">
         <div class="p-6 border-b border-slate-100 dark:border-white/10 flex justify-between items-center">
             <h3 class="text-xl font-bold text-rose-600 dark:text-rose-400 font-headline">{{ __('admin.monitoring.anomaly_table_title') }}</h3>
         </div>
@@ -194,7 +206,6 @@
                         <th class="px-6 py-4">{{ __('admin.dashboard.log_temp') }} (°C)</th>
                         <th class="px-6 py-4">{{ __('admin.monitoring.humidity') }} (%)</th>
                         <th class="px-6 py-4">{{ __('admin.monitoring.anomaly_indicator') }}</th>
-                        <th class="px-6 py-4">{{ __('admin.monitoring.description') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-white/5">
@@ -206,11 +217,10 @@
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-500/30 rounded-full text-xs font-bold">{{ $anomaly->anomaly_type === 'Anomaly Detected' ? __('admin.monitoring.anomaly_detected') : $anomaly->anomaly_type }}</span>
                         </td>
-                        <td class="px-6 py-4 dark:text-slate-300">{{ $anomaly->description }}</td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.monitoring.no_data') }}</td>
+                        <td colspan="4" class="px-6 py-4 text-center text-slate-500 dark:text-slate-400 font-bold">{{ __('admin.monitoring.no_data') }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -219,6 +229,7 @@
         <div class="p-6 border-t border-slate-100 dark:border-white/10">
             {{ $anomaly_logs->links('pagination::tailwind') }}
         </div>
+    </div>
     </div>
 </div>
 

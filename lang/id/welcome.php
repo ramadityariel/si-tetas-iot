@@ -25,7 +25,7 @@ return [
         'btn_all' => 'Lihat Semua',
     ],
     'demo' => [
-        'title' => 'Demo Tim',
+        'title' => 'Video Profil',
         'desc' => 'Geser secara manual ke samping menggunakan mouse atau swipe layar. Klik pada video untuk memperbesar tampilan secara interaktif.',
         'slide1_badge' => '🎬 Dokumentasi Utama',
         'slide1_desc' => 'Simulasi & Hasil Riset Proyek',
